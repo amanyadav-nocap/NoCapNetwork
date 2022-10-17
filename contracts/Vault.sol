@@ -5,8 +5,9 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Interfaces/IVault.sol";
 
-contract vault is ERC20Upgradeable,ERC721HolderUpgradeable,Ownable{
+contract vault is ERC20Upgradeable,ERC721HolderUpgradeable,Ownable,IVault{
     address public admin;
     address public usdt;
     address public token721;
@@ -58,6 +59,8 @@ contract vault is ERC20Upgradeable,ERC721HolderUpgradeable,Ownable{
     }
 
     function voteOffer(uint256 _offerNumber, bool vote) external virtual {
+        require(balanceOf(msg.sender) > 0 ,"NF"); //No Fractions
+        require(msg.sender != offerredAmounts[_offerNumber].offerrer,"ONA");//Offerrer not allowed
         if(vote == true){
             IERC20Upgradeable(usdt).transferFrom(address(this), msg.sender, (balanceOf(msg.sender)*offerredAmounts[_offerNumber].offerred));
             transferFrom(msg.sender,offerredAmounts[_offerNumber].offerrer,balanceOf(msg.sender));
@@ -65,9 +68,9 @@ contract vault is ERC20Upgradeable,ERC721HolderUpgradeable,Ownable{
     }
 
 
-    function claim() external virtual{
-        // require(msg.sender 
-        require(balanceOf(msg.sender) >= (totalSupply()*51)/100 ,"Not eligible");
+    function claim(uint256 _offerNumber) external virtual{
+        require(msg.sender == offerredAmounts[_offerNumber].offerrer,"NO" );//Not Offerrer
+        require(balanceOf(msg.sender) >= (totalSupply()*51)/100 ,"NE");//Not Eligible
         IERC721Upgradeable(token721).safeTransferFrom(address(this),msg.sender,tokenID);
     }
 
