@@ -1,34 +1,75 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.4;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.14;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "Interfaces/IVaultfactory.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract ChronCept is ERC721, ERC721URIStorage, ERC721Burnable, Ownable {
-    constructor(string memory _name, string memory _symbol) ERC721("_name", "_Symbol") {}
+contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
+    address private vaultFactory;
 
-    function safeMint(address to, uint256 tokenId, string memory uri)
-        public
-        onlyOwner
-    {
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _vaultfactory
+    ) external initializer {
+        require(_vaultfactory != address(0), "ZA"); //Zero Address
+        __ERC721_init_unchained(_name, _symbol);
+        vaultFactory = _vaultfactory;
     }
 
-  
+    function safeMint(
+        uint256 _tokenId,
+        string memory uri,
+        uint256 _tokenSupply,
+        uint256 _fractionPrice,
+        address _usdt,
+        address _admin
+    ) public {
+        address vault = IVaultfactory(vaultFactory).createVault(
+            name(),
+            symbol(),
+            _tokenSupply,
+            address(this),
+            _tokenId,
+            _fractionPrice,
+            _usdt,
+            _admin
+        );
+        _safeMint(vault, _tokenId);
+        _setTokenURI(_tokenId, uri);
+    }
 
-    function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
-        super._burn(tokenId);
+    function burn(uint256 _tokenId) external onlyOwner {
+        require(_exists(_tokenId));
+        _burn(_tokenId);
     }
 
     function tokenURI(uint256 tokenId)
         public
         view
-        override(ERC721, ERC721URIStorage)
+        override(ERC721URIStorageUpgradeable)
         returns (string memory)
     {
         return super.tokenURI(tokenId);
+    }
+
+    function _msgSender()
+        internal
+        view
+        override(ContextUpgradeable, Context)
+        returns (address)
+    {
+        return msg.sender;
+    }
+
+    function _msgData()
+        internal
+        view
+        override(ContextUpgradeable, Context)
+        returns (bytes calldata)
+    {
+        return msg.data;
     }
 }
