@@ -15,6 +15,8 @@ interface IVault {
 
     function transfer(address _to, uint256 _amount) external;
 
+    function buyFractions(uint256 _fractionAmount) external;
+
     function makeOffer(uint256 offerredPrice) external;
 
     function voteOffer(uint256 _offerNumber, bool vote) external;

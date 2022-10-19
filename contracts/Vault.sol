@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol"
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "Interfaces/IUSDT.sol";
 
 contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
     address public admin;
@@ -13,8 +14,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
     address public token721;
     uint256 public fractionPrice;
     uint256 public tokenID;
-    // uint256 public tokenSupply;
+    uint256 public fractionSupply = totalSupply();
     uint256 private offerNumber = 1;
+    bool primaryBuyEnd;
     struct offer {
         address offerrer;
         uint256 offerred;
@@ -49,6 +51,17 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
         _mint(_to, _amount);
     }
 
+    function buyFractions(uint256 _fractionAmount) external {
+        require(!primaryBuyEnd,"AFS");//All Fractions Sold
+        require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
+        IUSDT(_usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
+        transfer(msg.sender, _fractionAmount);
+        fractionSupply- = _fractionAmount;
+        if(fractionSuply==0)
+            primaryBuyEnd = true;
+        
+    }
+
     function transfer(address _to, uint256 _amount)
         public
         override(ERC20Upgradeable)
@@ -60,7 +73,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
     }
 
     function makeOffer(uint256 offerredPrice) external {
-        require(balanceOf(address(this)) == 0, "NAY"); //Not Available Yet
+        require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
         uint256 priceToPay = offerredPrice * totalSupply();
         IERC20Upgradeable(usdt).transfer(address(this), priceToPay);
