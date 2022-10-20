@@ -54,10 +54,10 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(_usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
-        transfer(msg.sender, _fractionAmount);
-        fractionSupply- = _fractionAmount;
-        if(fractionSuply==0)
+        IUSDT(usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
+        _transfer(address(this), msg.sender, _fractionAmount);
+        fractionSupply =fractionSupply - _fractionAmount;
+        if(fractionSupply==0)
             primaryBuyEnd = true;
         
     }
@@ -65,6 +65,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, Ownable {
     function transfer(address _to, uint256 _amount)
         public
         override(ERC20Upgradeable)
+        onlyOwner
         returns (bool)
     {
         require(_to != address(0), "ZA"); //zero address

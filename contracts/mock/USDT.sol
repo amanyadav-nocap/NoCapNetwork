@@ -4,7 +4,7 @@ pragma solidity ^0.8.14;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../interfaces/IUSDT.sol";
+import "Interfaces/IUSDT.sol";
 
 contract Usd is IERC20, ERC20Burnable, Ownable{
     constructor() ERC20("USDT", "USDT") {
