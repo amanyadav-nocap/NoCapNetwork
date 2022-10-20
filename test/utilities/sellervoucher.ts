@@ -25,15 +25,13 @@ class SellerVoucher {
     nftAddress: any,
     owner: any,
     tokenID: any,
-    fractionAmount: any,
-    fractionPrice: any
+    NFTPrice: any
   ) {
     const voucher = {
       nftAddress,
       owner,
       tokenID,
-      fractionAmount,
-      fractionPrice,
+      NFTPrice
     };
     const domain = await this._signingDomain();
     const types = {
@@ -41,8 +39,7 @@ class SellerVoucher {
         { name: "nftAddress", type: "address" },
         { name: "owner", type: "address" },
         { name: "tokenID", type: "uint256" },
-        { name: "fractionAmount", type: "uint256" },
-        { name: "fractionPrice", type: "uint256" },
+        { name: "NFTPrice", type: "uint256" },
       ],
     };
     // console.log("let me know",voucher);
