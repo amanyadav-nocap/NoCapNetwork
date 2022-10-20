@@ -9,8 +9,7 @@ import "Interfaces/IVaultfactory.sol";
 import "Interfaces/IVault.sol";
 import "Interfaces/IUSDT.sol";
 
-contract Marketplace is EIP712Upgradeable
-{
+contract Marketplace is EIP712Upgradeable {
     address owner;
     address usdt;
 
@@ -24,7 +23,6 @@ contract Marketplace is EIP712Upgradeable
 
     function initialize(address _owner, address _usdt) external initializer {
         require(_owner != address(0), "ZA"); //Zero Address
-        require(_token != address(0), "ZA"); //Zero Address
         __EIP712_init("Chroncept_MarketItem", "1");
         owner = _owner;
         usdt = _usdt;
@@ -51,15 +49,25 @@ contract Marketplace is EIP712Upgradeable
             );
     }
 
-    function verifySeller(ChronceptSeller memory seller) internal view returns(address){
+    function verifySeller(ChronceptSeller memory seller)
+        internal
+        view
+        returns (address)
+    {
         bytes32 digest = hashSeller(seller);
         return ECDSAUpgradeable.recover(digest, seller.signature);
     }
 
     function buy(ChronceptSeller memory seller) external {
         address signer = verifySeller(seller);
-        require(signer == seller.owner,"IS");//Invalid Signer
+        require(signer == seller.owner, "IS"); //Invalid Signer
         IUSDT(usdt).transfer(msg.sender, seller.owner, seller.NFTPrice);
-        IERC721Upgradeable(seller.nftAddress).safeTransferFrom(seller, to, tokenId);
+        IERC721Upgradeable(seller.nftAddress).safeTransferFrom(
+            seller.owner,
+            msg.sender,
+            seller.tokenID
+        );
     }
+
+
 }

@@ -31,7 +31,7 @@ class SellerVoucher {
       nftAddress,
       owner,
       tokenID,
-      NFTPrice
+      NFTPrice,
     };
     const domain = await this._signingDomain();
     const types = {
@@ -42,13 +42,8 @@ class SellerVoucher {
         { name: "NFTPrice", type: "uint256" },
       ],
     };
-    // console.log("let me know",voucher);
-    // console.log("let me domain",domain);
-    // console.log("let me signer",this.signer.address);
 
     const signature = await this.signer._signTypedData(domain, types, voucher);
-    // console.log("signature",signature);
-    // console.log(voucher,"voucher");
     return {
       ...voucher,
       signature,
