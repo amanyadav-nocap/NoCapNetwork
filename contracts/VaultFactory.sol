@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/ClonesUpgradeable.sol";
 import "Interfaces/IVault.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "hardhat/console.sol";
 
 contract vaultFactory is Ownable, Initializable {
     address vault;
@@ -32,10 +33,10 @@ contract vaultFactory is Ownable, Initializable {
         uint256 _fractionPrice,
         address _usdt,
         address _admin
-    ) external initializer onlyOperator returns (address _vault) {
+    ) external onlyOperator returns (address) {
         require(vaultAddress[_tokenID] == address(0), "VE"); //Vault already exists for the token ID
         bytes32 salt = keccak256(abi.encodePacked(_name, _symbol, _admin));
-        _vault = ClonesUpgradeable.cloneDeterministic(vault, salt);
+        address _vault = ClonesUpgradeable.cloneDeterministic(vault, salt);
         // VCount++;
         vaultAddress[_tokenID] = _vault;
         IVault(_vault).initialize(
