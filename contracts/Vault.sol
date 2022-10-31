@@ -17,8 +17,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     uint256 public fractionPrice;
     uint256 public tokenID;
     uint256 public fractionSupply;
-    uint256 private offerNumber = 1;
+    uint256 private offerNumber;
     bool primaryBuyEnd;
+    uint256 [] offerrers;
     struct offer {
         address offerrer;
         uint256 offerred;
@@ -48,6 +49,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         tokenID = _tokenID;
         mint(address(this), _tokenSupply);
         fractionSupply = totalSupply();
+        offerNumber = 1 ; 
     }
 
     function mint(address _to, uint256 _amount) internal {
@@ -58,8 +60,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
-
+        IUSDT(usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
         _transfer(address(this), msg.sender, _fractionAmount);
 
         fractionSupply =fractionSupply - _fractionAmount;
@@ -85,13 +86,14 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
         uint256 priceToPay = offerredPrice * totalSupply();
-        IUSDT(usdt)._transferFrom(msg.sender,address(this), priceToPay);
+        IUSDT(usdt).transfer(msg.sender,address(this), priceToPay);
        console.log("vault balance",usdt.balanceOf(address(this)));
         offerredAmounts[offerNumber] = offer(
             msg.sender,
             offerredPrice,
             priceToPay
         );
+        offerrers.push(offerNumber);
         offerNumber++;
     }
 
@@ -116,12 +118,24 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function claim(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
         require(balanceOf(msg.sender) >= (totalSupply() * 51) / 100, "NE"); //Not Eligible
+        offerredAmounts[_offerNumber].paidAmount = 0;
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
-            msg.sender,
+            offerredAmounts[_offerNumber].offerrer,
             tokenID
         );
+        bulkTransfer(offerrers);
+        
     }
+
+    function bulkTransfer(uint256 [] memory _offerrers) internal {
+        
+        for(uint i =0; i< _offerrers.length; i++){
+        
+            _transfer(address(this), offerredAmounts[_offerrers[i]].offerrer , offerredAmounts[_offerrers[i]].paidAmount);
+        }
+            
+        }
 
    
 }
