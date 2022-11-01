@@ -20,6 +20,8 @@ contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
     }
 
     function safeMint(
+        string memory name,
+        string memory symbol,
         uint256 _tokenId,
         string memory uri,
         uint256 _tokenSupply,
@@ -28,8 +30,8 @@ contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
         address _admin
     ) public {
         address vault = IVaultfactory(vaultFactory).createVault(
-            name(),
-            symbol(),
+            name,
+            symbol,
             _tokenSupply,
             address(this),
             _tokenId,
