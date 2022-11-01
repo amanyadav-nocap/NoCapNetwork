@@ -21,14 +21,19 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     bool primaryBuyEnd;
     bool NFTSold;
     uint private finalOfferredAmount;
+
+
+
+
     uint256 [] offerrers;
+
+
     struct offer {
         address offerrer;
         uint256 offerred;
         uint256 paidAmount;
     }
     mapping(uint256 => offer) private offerredAmounts;
-    
 
     function initialize(
         string memory _name,
@@ -53,6 +58,8 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         mint(address(this), _tokenSupply);
         fractionSupply = totalSupply();
         offerNumber = 1 ; 
+
+
     }
 
     function mint(address _to, uint256 _amount) internal {
@@ -63,7 +70,8 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
+        IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
+
         _transfer(address(this), msg.sender, _fractionAmount);
 
         fractionSupply =fractionSupply - _fractionAmount;
@@ -72,24 +80,24 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         
     }
 
-    function transfer(address _to, uint256 _amount)
-        public
-        override(ERC20Upgradeable)
-        onlyOwner
-        returns (bool)
-    {
+    // function transfer(address _to, uint256 _amount)
+    //     public
+    //     override(ERC20Upgradeable)
+    //     onlyOwner
+    //     returns (bool)
+    // {
 
-        require(_to != address(0), "ZA"); //zero address
-        _transfer(address(this), _to, _amount);
-        return true;
-    }
+    //     require(_to != address(0), "ZA"); //zero address
+    //     _transfer(address(this), _to, _amount);
+    //     return true;
+    // }
 // for make offer are we taking fraction price of nft price?
 // can multiple people offer same amount?
     function makeOffer(uint256 offerredPrice) external {
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
         uint256 priceToPay = offerredPrice * totalSupply();
-        IUSDT(usdt).transfer(msg.sender,address(this), priceToPay);
+        IUSDT(usdt)._transferFrom(msg.sender,address(this), priceToPay);
        console.log("vault balance",usdt.balanceOf(address(this)));
         offerredAmounts[offerNumber] = offer(
             msg.sender,
@@ -123,7 +131,14 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(balanceOf(msg.sender) >= (totalSupply() * 51) / 100, "NE"); //Not Eligible
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
+        // IERC721Upgradeable(token721).safeTransferFrom(
+        //     address(this),
+        //     msg.sender,
+        //     tokenID
+        // );
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
+
+
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
             offerredAmounts[_offerNumber].offerrer,
@@ -131,9 +146,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         );
         finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
         bulkTransfer(offerrers);
-        
     }
-    function claimShare() external {
+
+     function claimShare() external {
         require(NFTSold == true,"NFT not sold");
         require(balanceOf(msg.sender) !=0,"AC"); //Already Claimed
         uint256 _amount = balanceOf(msg.sender)*finalOfferredAmount;
@@ -148,8 +163,8 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         
             _transfer(address(this), offerredAmounts[_offerrers[i]].offerrer , offerredAmounts[_offerrers[i]].paidAmount);
         }
-            
-        }
+    }
+
 
    
 }
