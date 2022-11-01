@@ -65,7 +65,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt).transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
+        IERC20(usdt).transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
 
         _transfer(address(this), msg.sender, _fractionAmount);
 
@@ -92,7 +92,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
         uint256 priceToPay = offerredPrice * totalSupply();
-        IUSDT(usdt).transferFrom(msg.sender,address(this), priceToPay);
+        IERC20(usdt).transferFrom(msg.sender,address(this), priceToPay);
        console.log("vault balance",usdt.balanceOf(address(this)));
         offerredAmounts[offerNumber] = offer(
             msg.sender,
