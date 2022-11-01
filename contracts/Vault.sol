@@ -21,12 +21,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     bool primaryBuyEnd;
     bool NFTSold;
     uint private finalOfferredAmount;
-
-
-
-
     uint256 [] offerrers;
-
 
     struct offer {
         address offerrer;
@@ -70,7 +65,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
+        IUSDT(usdt).transfer(msg.sender, owner(), _fractionAmount*fractionPrice);
 
         _transfer(address(this), msg.sender, _fractionAmount);
 
@@ -97,7 +92,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
         uint256 priceToPay = offerredPrice * totalSupply();
-        IUSDT(usdt)._transferFrom(msg.sender,address(this), priceToPay);
+        IUSDT(usdt).transferFrom(msg.sender,address(this), priceToPay);
        console.log("vault balance",usdt.balanceOf(address(this)));
         offerredAmounts[offerNumber] = offer(
             msg.sender,
@@ -131,14 +126,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(balanceOf(msg.sender) >= (totalSupply() * 51) / 100, "NE"); //Not Eligible
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
-        // IERC721Upgradeable(token721).safeTransferFrom(
-        //     address(this),
-        //     msg.sender,
-        //     tokenID
-        // );
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
-
-
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
             offerredAmounts[_offerNumber].offerrer,
@@ -161,7 +149,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         
         for(uint i =0; i< _offerrers.length; i++){
         
-            _transfer(address(this), offerredAmounts[_offerrers[i]].offerrer , offerredAmounts[_offerrers[i]].paidAmount);
+            IUSDT(usdt).transfer(address(this), offerredAmounts[_offerrers[i]].offerrer , offerredAmounts[_offerrers[i]].paidAmount);
         }
     }
 
