@@ -19,6 +19,8 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     uint256 public fractionSupply;
     uint256 private offerNumber;
     bool primaryBuyEnd;
+    bool NFTSold;
+    uint private finalOfferredAmount;
     uint256 [] offerrers;
     struct offer {
         address offerrer;
@@ -26,6 +28,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         uint256 paidAmount;
     }
     mapping(uint256 => offer) private offerredAmounts;
+    
 
     function initialize(
         string memory _name,
@@ -119,14 +122,23 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
         require(balanceOf(msg.sender) >= (totalSupply() * 51) / 100, "NE"); //Not Eligible
         offerredAmounts[_offerNumber].paidAmount = 0;
+        NFTSold = true;
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
             offerredAmounts[_offerNumber].offerrer,
             tokenID
         );
+        finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
         bulkTransfer(offerrers);
         
     }
+    function claimShare() external {
+        require(NFTSold == true,"NFT not sold");
+        require(balanceOf(msg.sender) !=0,"AC"); //Already Claimed
+        uint256 _amount = balanceOf(msg.sender)*finalOfferredAmount;
+        IUSDT(usdt).transfer(address(this), msg.sender, _amount );
+    }
+
 
     function bulkTransfer(uint256 [] memory _offerrers) internal {
         
