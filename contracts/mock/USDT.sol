@@ -22,7 +22,11 @@ contract Usd is IERC20, ERC20Burnable, Ownable{
 		return 18;
 	}
 
-    
+    function _transferFrom(address from, address to , uint256 _amount) external{
+        require(to!=address(0),"Zero address sent");
+        transferFrom(from, to, _amount);
+        
+    }
 
     function transfer(address from, address to , uint256 _amount) external {
         require(to!=address(0),"Zero address sent");
