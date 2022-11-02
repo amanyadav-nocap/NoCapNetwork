@@ -56,7 +56,6 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         tokenID = _tokenID;
         mint(address(this), _tokenSupply);
         fractionSupply = totalSupply();
-        tokenAmount = totalSupply();
         offerNumber = 1 ; 
         taxWallet = _taxWallet;
         marketFeeWallet = _marketFeeWallet;
@@ -88,9 +87,10 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         returns (bool)
     {
         require(_to != address(0), "ZA"); //zero address
-        tokenAmount = tokenAmount - (_amount);
+        tokenAmount = tokenAmount + (_amount);
         uint256 amountTranferred = _amount - ((_amount*25)/1000);
         _transfer(address(this), _to, (_amount*25)/1000);//TAX amount
+        tokenAmount = tokenAmount + amountTranferred;
         _transfer(address(this), _to, amountTranferred);
         return true;
     }
