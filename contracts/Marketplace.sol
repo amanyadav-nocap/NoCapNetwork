@@ -61,7 +61,8 @@ contract Marketplace is EIP712Upgradeable {
     function buy(ChronceptSeller memory seller) external {
         address signer = verifySeller(seller);
         require(signer == seller.owner, "IS"); //Invalid Signer
-        IUSDT(usdt).transfer(msg.sender, seller.owner, seller.NFTPrice);
+        IUSDT(usdt)._transferFrom(msg.sender, to, amount);
+        IUSDT(usdt)._transferFrom(msg.sender, seller.owner, seller.NFTPrice);
         IERC721Upgradeable(seller.nftAddress).safeTransferFrom(
             seller.owner,
             msg.sender,

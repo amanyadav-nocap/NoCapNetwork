@@ -7,16 +7,18 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgra
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "hardhat/console.sol";
-
 import "Interfaces/IUSDT.sol";
 
 contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable {
     address public admin;
+    address private taxWallet;
+    address private marketFeeWallet;
     IUSDT public usdt;
     address public token721;
     uint256 public fractionPrice;
     uint256 public tokenID;
     uint256 public fractionSupply;
+    uint256 private tokenAmount;
     uint256 private offerNumber;
     bool primaryBuyEnd;
     bool NFTSold;
@@ -38,7 +40,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         uint256 _tokenID,
         uint256 _fractionPrice,
         address _usdt,
-        address _admin
+        address _admin,
+        address _taxWallet,
+        address _marketFeeWallet
     ) external initializer{
         __Ownable_init();
         require(_admin != address(0), "ZAA"); //Zero address for admin
@@ -52,7 +56,10 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         tokenID = _tokenID;
         mint(address(this), _tokenSupply);
         fractionSupply = totalSupply();
+        tokenAmount = totalSupply();
         offerNumber = 1 ; 
+        taxWallet = _taxWallet;
+        marketFeeWallet = _marketFeeWallet;
 
 
     }
@@ -65,27 +72,28 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
+        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (fractionPrice*1)/100);//Platform Fee
         IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
-
-        _transfer(address(this), msg.sender, _fractionAmount);
-
+        transfer(msg.sender, _fractionAmount);
         fractionSupply =fractionSupply - _fractionAmount;
         if(fractionSupply==0)
             primaryBuyEnd = true;
         
     }
 
-    // function transfer(address _to, uint256 _amount)
-    //     public
-    //     override(ERC20Upgradeable)
-    //     onlyOwner
-    //     returns (bool)
-    // {
-
-    //     require(_to != address(0), "ZA"); //zero address
-    //     _transfer(address(this), _to, _amount);
-    //     return true;
-    // }
+    function transfer(address _to, uint256 _amount)
+        public
+        override(ERC20Upgradeable)
+        onlyOwner
+        returns (bool)
+    {
+        require(_to != address(0), "ZA"); //zero address
+        tokenAmount = tokenAmount - (_amount);
+        uint256 amountTranferred = _amount - ((_amount*25)/1000);
+        _transfer(address(this), _to, (_amount*25)/1000);//TAX amount
+        _transfer(address(this), _to, amountTranferred);
+        return true;
+    }
 // for make offer are we taking fraction price of nft price?
 // can multiple people offer same amount?
     function makeOffer(uint256 offerredPrice) external {
@@ -123,7 +131,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
 
     function claim(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
-        require(balanceOf(msg.sender) >= (totalSupply() * 51) / 100, "NE"); //Not Eligible
+        require(balanceOf(msg.sender) >= (tokenAmount * 51) / 100, "NE"); //Not Eligible
+        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (offerredAmounts[_offerNumber].paidAmount*1)/100);//Platform Fee
+        IUSDT(usdt)._transferFrom(msg.sender, taxWallet, (offerredAmounts[_offerNumber].paidAmount*25)/1000);//Tax Amount
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
