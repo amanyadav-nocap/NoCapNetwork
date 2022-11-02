@@ -73,28 +73,17 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
         IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (_fractionAmount*fractionPrice*1)/100);//Platform Fee
         IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
-        transfer_(msg.sender, _fractionAmount);
+        transferFrom(address(this),msg.sender, _fractionAmount);
         fractionSupply =fractionSupply - _fractionAmount;
         if(fractionSupply==0)
             primaryBuyEnd = true;
         
     }
-    function transfer_(address _to, uint256 _amount)
-        internal
-        onlyOwner
-    {
-        require(_to != address(0), "ZA"); //zero address
-        uint256 amountTranferred = _amount - ((_amount*25)/1000);
-        _transfer(address(this), _to, (_amount*25)/1000);//TAX amount
-        tokenAmount = tokenAmount + amountTranferred;
-        _transfer(address(this), _to, amountTranferred);
-        
-    }
+
 
     function transferFrom(address _from, address _to, uint256 _amount)
         public
         override(ERC20Upgradeable)
-        onlyOwner
         returns (bool)
     {
         require(_to != address(0), "ZA"); //zero address
