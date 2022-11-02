@@ -71,8 +71,11 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (_fractionAmount*fractionPrice*1)/100);//Platform Fee
-        IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
+        // IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (_fractionAmount*fractionPrice*1)/100);//Platform Fee
+        uint256 amount = _fractionAmount*fractionPrice;
+        IUSDT(usdt)._transferFrom(msg.sender, owner(), amount);
+        IUSDT(usdt).transfer(owner(),marketFeeWallet, (amount*1)/100);
+
         transferFrom(address(this),msg.sender, _fractionAmount);
         fractionSupply =fractionSupply - _fractionAmount;
         if(fractionSupply==0)
