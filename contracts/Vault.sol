@@ -134,7 +134,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function claim(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
         require(balanceOf(msg.sender) >= (tokenAmount * 51) / 100, "NE"); //Not Eligible
-        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (offerredAmounts[_offerNumber].paidAmount*1)/100);//Platform Fee
+        IUSDT(usdt).transfer(address(this), marketFeeWallet, (offerredAmounts[_offerNumber].paidAmount*1)/100);//Platform Fee
         IUSDT(usdt)._transferFrom(msg.sender, taxWallet, (offerredAmounts[_offerNumber].paidAmount*25)/1000);//Tax Amount
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
