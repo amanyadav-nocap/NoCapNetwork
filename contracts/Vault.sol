@@ -71,16 +71,16 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd,"AFS");//All Fractions Sold
         require(fractionSupply >=_fractionAmount,"NES");//Not Enough Supply 
-        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (fractionPrice*1)/100);//Platform Fee
+        IUSDT(usdt)._transferFrom(msg.sender, marketFeeWallet, (_fractionAmount*fractionPrice*1)/100);//Platform Fee
         IUSDT(usdt)._transferFrom(msg.sender, owner(), _fractionAmount*fractionPrice);
-        transfer(msg.sender, _fractionAmount);
+        transferFrom(address(this),msg.sender, _fractionAmount);
         fractionSupply =fractionSupply - _fractionAmount;
         if(fractionSupply==0)
             primaryBuyEnd = true;
         
     }
 
-    function transfer(address _to, uint256 _amount)
+    function transferFrom(address _from, address _to, uint256 _amount)
         public
         override(ERC20Upgradeable)
         onlyOwner
@@ -88,9 +88,9 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
     {
         require(_to != address(0), "ZA"); //zero address
         uint256 amountTranferred = _amount - ((_amount*25)/1000);
-        _transfer(address(this), _to, (_amount*25)/1000);//TAX amount
+        _transfer(_from, _to, (_amount*25)/1000);//TAX amount
         tokenAmount = tokenAmount + amountTranferred;
-        _transfer(address(this), _to, amountTranferred);
+        _transfer(_from, _to, amountTranferred);
         return true;
     }
 // for make offer are we taking fraction price of nft price?
