@@ -12,7 +12,9 @@ interface IVaultfactory {
         uint256 _tokenID,
         uint256 _fractionPrice,
         address _usdt,
-        address _admin
+        address _admin,
+        address _taxWallet,
+        address _marketFeeWallet
     ) external returns (address _vault);
 
     function updateVault(address _vault) external;

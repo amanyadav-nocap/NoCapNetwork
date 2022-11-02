@@ -32,7 +32,9 @@ contract vaultFactory is Ownable, Initializable {
         uint256 _tokenID,
         uint256 _fractionPrice,
         address _usdt,
-        address _admin
+        address _admin,
+        address _taxWallet,
+        address _marketFeeWallet
     ) external onlyOperator returns (address) {
         require(vaultAddress[_tokenID] == address(0), "VE"); //Vault already exists for the token ID
         bytes32 salt = keccak256(abi.encodePacked(_name, _symbol, _admin));
@@ -47,7 +49,9 @@ contract vaultFactory is Ownable, Initializable {
             _tokenID,
             _fractionPrice,
             _usdt,
-            _admin
+            _admin,
+            _taxWallet,
+            _marketFeeWallet
         );
         emit vaultcreated(_vault, _tokenID, _admin);
         return _vault;

@@ -27,7 +27,9 @@ contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
         uint256 _tokenSupply,
         uint256 _fractionPrice,
         address _usdt,
-        address _admin
+        address _admin,
+        address _taxWallet,
+        address _marketFeeWallet
     ) public {
         address vault = IVaultfactory(vaultFactory).createVault(
             name,
@@ -37,7 +39,9 @@ contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
             _tokenId,
             _fractionPrice,
             _usdt,
-            _admin
+            _admin,
+            _taxWallet,
+            _marketFeeWallet
         );
         _safeMint(vault, _tokenId);
         _setTokenURI(_tokenId, uri);

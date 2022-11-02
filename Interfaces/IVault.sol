@@ -10,7 +10,9 @@ interface IVault {
         uint256 _tokenID,
         uint256 _fractionPrice,
         address _usdt,
-        address _admin
+        address _admin,
+        address _taxWallet,
+        address _marketFeeWallet
     ) external;
 
     function transfer(address _to, uint256 _amount) external;
