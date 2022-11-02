@@ -138,7 +138,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         IUSDT(usdt)._transferFrom(msg.sender, taxWallet, (offerredAmounts[_offerNumber].paidAmount*25)/1000);//Tax Amount
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
-        _transfer(msg.sender, address(this), balanceOf(msg.sender));
+        transferFrom(msg.sender, address(this), balanceOf(msg.sender));
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
             offerredAmounts[_offerNumber].offerrer,
@@ -152,7 +152,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable, OwnableUpgradeable 
         require(NFTSold == true,"NFT not sold");
         require(balanceOf(msg.sender) !=0,"AC"); //Already Claimed
         uint256 _amount = balanceOf(msg.sender)*finalOfferredAmount;
-        _transfer(msg.sender, address(this), balanceOf(msg.sender));
+        transferFrom(msg.sender, address(this), balanceOf(msg.sender));
         IUSDT(usdt).transfer(address(this), msg.sender, _amount );
     }
 
