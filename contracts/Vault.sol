@@ -68,7 +68,7 @@ contract vault is
     function mint(address _to, uint256 _amount) internal {
         //  require(totalSupply()+_amount<=tokenSupply,"IA");//Invalid amount
         _mint(_to, _amount * 10**decimals());
-        console.log("totalSupply", totalSupply());
+        // console.log("totalSupply", totalSupply());
     }
 
     function buyFractions(uint256 _fractionAmount) external {
@@ -80,24 +80,26 @@ contract vault is
         IUSDT(usdt)._transferFrom(msg.sender, owner(), amount);
         IUSDT(usdt).transfer(owner(), marketFeeWallet, (amount * 1) / 100);
 
-        transferFrom(address(this), msg.sender, _fractionAmount);
+        _transfer(address(this), msg.sender, _fractionAmount);
+        tokenAmount = tokenAmount + balanceOf(msg.sender);
+        console.log("t amount",tokenAmount);
+        console.log("balance amount", balanceOf(msg.sender));
         fractionSupply = fractionSupply - _fractionAmount;
         if (fractionSupply == 0) primaryBuyEnd = true;
     }
 
-    function transferFrom(
+    function _transfer(
         address _from,
         address _to,
         uint256 _amount
-    ) public override(ERC20Upgradeable) returns (bool) {
+    ) internal override(ERC20Upgradeable) {
         require(_to != address(0), "ZA"); //zero address
         uint256 amountTransferred = _amount - ((_amount * 25) / 1000);
         console.log("amountT", amountTransferred);
         console.log("amount", _amount);
-        _transfer(_from, taxWallet, (_amount * 25) / 1000); //TAX amount
-        tokenAmount = tokenAmount + amountTransferred;
-        _transfer(_from, _to, amountTransferred);
-        return true;
+        super._transfer(_from, taxWallet, (_amount * 25) / 1000); //TAX amount
+        super._transfer(_from, _to, amountTransferred);
+        
     }
 
     // for make offer are we taking fraction price of nft price?
@@ -105,8 +107,9 @@ contract vault is
     function makeOffer(uint256 offerredPrice) external {
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
-        uint256 priceToPay = offerredPrice * tokenAmount;
+        uint256 priceToPay = offerredPrice * totalSupply();
         console.log("token Amount", tokenAmount);
+        console.log("price to pay", priceToPay);
         IUSDT(usdt)._transferFrom(msg.sender, address(this), priceToPay);
         console.log("vault balance", usdt.balanceOf(address(this)));
         offerredAmounts[offerNumber] = offer(
@@ -127,6 +130,7 @@ contract vault is
                 msg.sender,
                 (balanceOf(msg.sender) * offerredAmounts[_offerNumber].offerred)
             );
+            console.log("usdt b",IUSDT(usdt).balanceOf(msg.sender));
             _transfer(
                 msg.sender,
                 offerredAmounts[_offerNumber].offerrer,
@@ -137,6 +141,7 @@ contract vault is
 
     function claim(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
+        console.log("token Amount",tokenAmount);
         require(balanceOf(msg.sender) >= (tokenAmount * 51) / 100, "NE"); //Not Eligible
         IUSDT(usdt).transfer(
             address(this),
@@ -145,7 +150,7 @@ contract vault is
         ); //Platform Fee
         offerredAmounts[_offerNumber].paidAmount = 0;
         NFTSold = true;
-        transferFrom(msg.sender, address(this), balanceOf(msg.sender));
+        _transfer(msg.sender, address(this), balanceOf(msg.sender));
         IERC721Upgradeable(token721).safeTransferFrom(
             address(this),
             offerredAmounts[_offerNumber].offerrer,
@@ -158,9 +163,15 @@ contract vault is
     function claimShare() external {
         require(NFTSold == true, "NFT not sold");
         require(balanceOf(msg.sender) != 0, "AC"); //Already Claimed
+        console.log("fbalance",balanceOf(msg.sender));
         uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
-        transferFrom(msg.sender, address(this), balanceOf(msg.sender));
+        // console.log("amount to pay",balanceOf(msg.sender));
+        console.log("amount to pay",_amount);
+        _transfer(msg.sender, address(this), balanceOf(msg.sender));
+        console.log("amount to pay",_amount);
+        console.log("vault balance",IUSDT(usdt).balanceOf(address(this)));
         IUSDT(usdt).transfer(address(this), msg.sender, _amount);
+        console.log("vault balance",IUSDT(usdt).balanceOf(address(this)));
     }
 
     function bulkTransfer(uint256[] memory _offerrers) internal {
