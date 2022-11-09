@@ -24,7 +24,7 @@ contract vault is
     uint256 public fractionSupply;
     uint256 private tokenAmount;
     uint256 public offerNumber;
-    // uint256 public finalOfferredAmount;
+    uint256 public finalOfferredAmount;
     bool primaryBuyEnd;
     bool NFTSold;
 
@@ -108,6 +108,7 @@ contract vault is
     function makeOffer(uint256 offerredPrice) external {
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
+        require(!NFTSold,"BO");//Buyout Over
         IUSDT(usdt).transferFrom(
             msg.sender,
             address(this),
@@ -121,6 +122,7 @@ contract vault is
     function voteOffer(uint256 _offerNumber) external {
         require(balanceOf(msg.sender) != 0, "AV"); //Already Voted
         require(msg.sender != offerredAmounts[_offerNumber].offerrer, "ONA"); //Offerrer not allowed
+
         offerredAmounts[_offerNumber].fractionAcquired =
             offerredAmounts[_offerNumber].fractionAcquired +
             balanceOf(msg.sender);
@@ -158,16 +160,15 @@ contract vault is
             offerredAmounts[_offerNumber].offerrer,
             tokenID
         );
-        // finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
+        finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
     }
 
-    // function claimShare() external {
-    //     require(NFTSold == true, "NFT not sold");
-
-    //     uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
-    //     _transfer(msg.sender, address(this), balanceOf(msg.sender));
-    //     IUSDT(usdt).transfer(address(this), msg.sender, _amount);
-    // }
+    function claimShare() external {
+        require(NFTSold, "BNO");//Buyout Not Over
+        uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
+        _transfer(msg.sender, address(this), balanceOf(msg.sender));
+        IUSDT(usdt).transfer(address(this), msg.sender, _amount);
+    }
 
     function excludeFromFee(address _account, bool _toExclude) external {
         require(_account != address(0), "ZA"); //Zero Address
