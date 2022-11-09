@@ -37,6 +37,8 @@ contract vaultFactory is Ownable, Initializable {
         address _marketFeeWallet
     ) external onlyOperator returns (address) {
         require(vaultAddress[_tokenID] == address(0), "VE"); //Vault already exists for the token ID
+        require(_admin != address(0), "ZAA"); //Zero address for admin
+        require(_token721 != address(0), "ZAT"); //Zero address for token
         bytes32 salt = keccak256(abi.encodePacked(_name, _symbol, _admin));
         address _vault = ClonesUpgradeable.cloneDeterministic(vault, salt);
         // VCount++;

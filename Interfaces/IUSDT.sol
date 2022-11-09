@@ -7,11 +7,11 @@ interface IUSDT is IERC20 {
     function mint(address to, uint256 amount) external;
 
     function decimals() external view returns (uint8);
-    function _transferFrom(
+    function transferFrom(
         address from,
         address to,
         uint256 amount
-    ) external; 
+    ) external returns(bool); 
     function transfer(
         address from,
         address to,
