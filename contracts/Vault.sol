@@ -108,7 +108,7 @@ contract vault is
     function makeOffer(uint256 offerredPrice) external {
         require(primaryBuyEnd, "NAY"); //Not Available Yet
         require(offerredPrice > fractionPrice, "PL"); //Price too low
-        require(!NFTSold,"BO");//Buyout Over
+        require(!NFTSold, "BO"); //Buyout Over
         IUSDT(usdt).transferFrom(
             msg.sender,
             address(this),
@@ -119,24 +119,19 @@ contract vault is
         offerNumber++;
     }
 
-    function voteOffer(uint256 _offerNumber) external {
+    function sellFraction(uint256 _offerNumber, uint256 _amount) external {
         require(balanceOf(msg.sender) != 0, "AV"); //Already Voted
         require(msg.sender != offerredAmounts[_offerNumber].offerrer, "ONA"); //Offerrer not allowed
 
-        offerredAmounts[_offerNumber].fractionAcquired =
-            offerredAmounts[_offerNumber].fractionAcquired +
-            balanceOf(msg.sender);
-            uint256 payOut = balanceOf(msg.sender) * offerredAmounts[_offerNumber].offerred;
-             IUSDT(usdt).transfer(
+        offerredAmounts[_offerNumber].fractionAcquired += _amount;
+
+        uint256 payOut = _amount * offerredAmounts[_offerNumber].offerred;
+        IUSDT(usdt).transfer(
             address(this),
             marketFeeWallet,
             (payOut * 1) / 100
         ); //Platform Fee
-        _transfer(
-            msg.sender,
-            offerredAmounts[_offerNumber].offerrer,
-            balanceOf(msg.sender)
-        );
+        _transfer(msg.sender, offerredAmounts[_offerNumber].offerrer, _amount);
 
         IUSDT(usdt).transfer(
             address(this),
@@ -163,8 +158,8 @@ contract vault is
         finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
     }
 
-    function claimShare() external {
-        require(NFTSold, "BNO");//Buyout Not Over
+    function claimShare() internal {
+        require(NFTSold, "BNO"); //Buyout Not Over
         uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
         IUSDT(usdt).transfer(address(this), msg.sender, _amount);

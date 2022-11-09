@@ -7,7 +7,7 @@ const SIGNING_DOMAIN_VERSION = "1";
  *
  * LazyMinting is a helper class that creates NFTVoucher objects and signs them, to be redeemed later by the LazyNFT contract.
  */
-class NFTSellerVoucher {
+class fractionBuyerVoucher {
   public contract: any;
   public signer: any;
   public _domain: any;
@@ -22,24 +22,24 @@ class NFTSellerVoucher {
   }
 
   async createVoucher(
-    nftAddress: any,
-    owner: any,
-    tokenID: any,
-    NFTPrice: any
+    buyer: any,
+    fractionVault: any,
+    fractionBuyAmount: any,
+    pricePaid: any
   ) {
     const voucher = {
-      nftAddress,
-      owner,
-      tokenID,
-      NFTPrice,
+      buyer,
+      fractionVault,
+      fractionBuyAmount,
+      pricePaid,
     };
     const domain = await this._signingDomain();
     const types = {
-      NFTSeller: [
-        { name: "nftAddress", type: "address" },
-        { name: "owner", type: "address" },
-        { name: "tokenID", type: "uint256" },
-        { name: "NFTPrice", type: "uint256" },
+      fractionBuyer: [
+        { name: "buyer", type: "address" },
+        { name: "fractionVault", type: "address" },
+        { name: "fractionBuyAmount", type: "uint256" },
+        { name: "pricePaid", type: "uint256" },
       ],
     };
 
@@ -65,4 +65,4 @@ class NFTSellerVoucher {
   }
 }
 
-export default NFTSellerVoucher;
+export default fractionBuyerVoucher;

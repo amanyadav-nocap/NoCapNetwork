@@ -15,7 +15,7 @@ interface IVault {
         address _marketFeeWallet
     ) external;
 
-    function transfer(address _to, uint256 _amount) external;
+    function _transfer(address _from,address _to, uint256 _amount) external;
 
     function buyFractions(uint256 _fractionAmount) external;
 
