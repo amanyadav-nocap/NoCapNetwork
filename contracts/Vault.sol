@@ -4,15 +4,15 @@ pragma solidity ^0.8.14;
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "hardhat/console.sol";
 import "Interfaces/IUSDT.sol";
 
 contract vault is
     ERC20Upgradeable,
-    ERC721HolderUpgradeable,
-    OwnableUpgradeable
+    ERC721HolderUpgradeable
+    
 {
     address public admin;
     address public taxWallet;
@@ -35,7 +35,10 @@ contract vault is
     }
     mapping(uint256 => offer) private offerredAmounts;
     mapping(address => bool) private excludeFee;
-
+    modifier onlyAdmin() {
+        require(msg.sender == admin,"NA");//Not Admin
+        _;
+    }
     function initialize(
         string memory _name,
         string memory _symbol,
@@ -48,7 +51,7 @@ contract vault is
         address _taxWallet,
         address _marketFeeWallet
     ) external initializer {
-        __Ownable_init();
+        // __Ownable_init();
         __ERC721Holder_init();
         __ERC20_init_unchained(_name, _symbol);
         admin = _admin;
@@ -79,7 +82,7 @@ contract vault is
         );
         IUSDT(usdt).transferFrom(
             msg.sender,
-            owner(),
+            admin,
             (amount - ((amount * 1) / 100))
         );
         _transfer(address(this), msg.sender, _fractionAmount);
@@ -94,7 +97,7 @@ contract vault is
         uint256 _amount
     ) internal override(ERC20Upgradeable) {
         require(_to != address(0), "ZA"); //zero address
-        if (excludeFee[msg.sender]) {
+        if (excludeFee[_from] || excludeFee[_to]) {
             super._transfer(_from, _to, _amount);
         } else {
             uint256 amountTransferred = _amount - ((_amount * 25) / 1000);
@@ -131,8 +134,9 @@ contract vault is
             marketFeeWallet,
             (payOut * 1) / 100
         ); //Platform Fee
+        console.log("test");
         _transfer(msg.sender, offerredAmounts[_offerNumber].offerrer, _amount);
-
+        console.log("test 1");
         IUSDT(usdt).transfer(
             address(this),
             msg.sender,
@@ -142,7 +146,11 @@ contract vault is
 
     function claim(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
-        // console.log("token Amount", tokenAmount);
+        console.log("token Amount", tokenAmount);
+        console.log("votes received",offerredAmounts[_offerNumber].fractionAcquired);
+        console.log("margin",(tokenAmount * 51) / 100);
+
+
         require(
             offerredAmounts[_offerNumber].fractionAcquired >=
                 (tokenAmount * 51) / 100,
@@ -165,7 +173,7 @@ contract vault is
         IUSDT(usdt).transfer(address(this), msg.sender, _amount);
     }
 
-    function excludeFromFee(address _account, bool _toExclude) external {
+    function excludeFromFee(address _account, bool _toExclude) external onlyAdmin{
         require(_account != address(0), "ZA"); //Zero Address
         excludeFee[_account] = _toExclude;
     }

@@ -942,6 +942,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
+  
 
     //fractional buy
     await vault_instance.connect(signers[1]).buyFractions(7);
@@ -1295,13 +1296,12 @@ describe("chroncept", async () => {
       owner.address,
       owner.address
     );
-    console.log("owner of NFT", await NFT.connect(owner).ownerOf(1));
+    console.log("owner of NFT",await NFT.connect(owner).ownerOf(1));
     let v1 = await factory.connect(owner).viewVault(1);
     const vault_instance = await new Vault__factory(owner).attach(v1);
     await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
     await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
-
     await USDT.connect(signers[1]).approve(
       vault_instance.address,
       expandTo18Decimals(120)
@@ -1314,7 +1314,9 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
-
+    // console.log("owner",factory.address);
+    // console.log("owner",await vault_instance.owner());
+    await vault_instance.excludeFromFee(vault_instance.address,true);
     //fractional buy
     await vault_instance
       .connect(signers[1])
@@ -1335,14 +1337,15 @@ describe("chroncept", async () => {
       "fraction balance",
       await vault_instance.balanceOf(signers[1].address)
     );
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(12));
+    await vault_instance.connect(signers[2]).sellFraction(1,expandTo18Decimals(8));
     console.log(
       "fraction balance",
       await vault_instance.balanceOf(owner.address)
     );
     console.log("balanceeeee", await USDT.balanceOf(signers[6].address));
  //  expect(await USDT.balanceOf(signers[1].address)).to.be.eq(expandTo18Decimals(107));
-    expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(0);
+   // expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(1);
 
     // expect(await vault_instance.balanceOf(signers[3].address)).to.be.eq(0);
 
@@ -1352,10 +1355,106 @@ describe("chroncept", async () => {
     expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(0);
 
     expect(await NFT.connect(owner).ownerOf(1)).to.be.eq(signers[6].address);
+    console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
+   // await vault_instance.connect(signers[2]).voteOffer(1);
+    console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
+    console.log("vault  balance   ",await USDT.balanceOf(vault_instance.address));
 
-    await vault_instance.connect(signers[2]).claimShare();
+
+0
     // expect(await vault_instance.balanceOf(signers[2].address)).to.be.eq(0);
 
     //  await expect (vault_instance.connect(signers[1]).claimShare()).to.be.revertedWith("AC");
   });
+
+
+  // it("Claim share multiple offer testing", async () => {
+  //   await factory.connect(owner).addOperator(NFT.address, true);
+  //   await NFT.connect(owner).safeMint(
+  //     "test_name",
+  //     "test_symbol",
+  //     1,
+  //     "test",
+  //     20,
+  //     10,
+  //     USDT.address,
+  //     owner.address,
+  //     owner.address,
+  //     owner.address
+  //   );
+  //   console.log("owner of NFT", await NFT.connect(owner).ownerOf(1));
+  //   let v1 = await factory.connect(owner).viewVault(1);
+  //   const vault_instance = await new Vault__factory(owner).attach(v1);
+  //   await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
+  //   await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
+  //   await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
+  //   await USDT.connect(signers[1]).approve(
+  //     vault_instance.address,
+  //     expandTo18Decimals(120)
+  //   );
+  //   await USDT.connect(signers[2]).approve(
+  //     vault_instance.address,
+  //     expandTo18Decimals(80)
+  //   );
+  //   await USDT.connect(signers[6]).approve(
+  //     vault_instance.address,
+  //     expandTo18Decimals(220)
+  //   );
+
+  //   //fractional buy
+
+  //   await vault_instance
+  //     .connect(signers[1])
+  //     .buyFractions(expandTo18Decimals(12));
+  //   await vault_instance
+  //     .connect(signers[2])
+  //     .buyFractions(expandTo18Decimals(8));
+
+  //   // 1st buyout offer
+  //   await vault_instance.connect(signers[6]).makeOffer(11);
+  //   // vote
+  //   // await vault_instance.connect(signers[1]).approve(signers[1].address,7);
+  //   console.log(
+  //     "balanceeeee",
+  //     await vault_instance.balanceOf(signers[1].address)
+  //   );
+  //   console.log(
+  //     "fraction balance",
+  //     await vault_instance.balanceOf(signers[1].address)
+  //   );
+  //   await vault_instance.connect(signers[1]).voteOffer(1);
+  //   console.log(
+  //     "fraction balance",
+  //     await vault_instance.balanceOf(owner.address)
+  //   );
+  //   console.log("balanceeeee", await USDT.balanceOf(signers[6].address));
+  //   //expect(await USDT.balanceOf(signers[1].address)).to.be.eq(expandTo18Decimals(107));
+  //   expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(0);
+
+  //   // expect(await vault_instance.balanceOf(signers[3].address)).to.be.eq(0);
+
+  //  // expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(11);
+
+  //   await vault_instance.connect(signers[6]).claim(1);
+  //   expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(0);
+
+  //   expect(await NFT.connect(owner).ownerOf(1)).to.be.eq(signers[6].address);
+  //   console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
+  //   await vault_instance.connect(signers[2]).voteOffer(1);
+  //   console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
+  //   console.log("vault  balance   ",await USDT.balanceOf(vault_instance.address));
+
+
+
+  //   // expect(await vault_instance.balanceOf(signers[2].address)).to.be.eq(0);
+
+  //   //  await expect (vault_instance.connect(signers[1]).claimShare()).to.be.revertedWith("AC");
+  // });
+
+
+
+
+
+
+
 });

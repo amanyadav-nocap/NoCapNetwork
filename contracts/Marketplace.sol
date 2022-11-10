@@ -47,6 +47,7 @@ contract Marketplace is EIP712Upgradeable {
 
     function hashNFTSeller(NFTSeller memory seller)
         internal
+        
         view
         returns (bytes32)
     {
