@@ -18,7 +18,7 @@ class fractionSellerVoucher {
     const { _contract, _signer } = data;
     this.contract = _contract;
     this.signer = _signer;
-    // console.log(_signer.address,_contract.address,"contract and address");
+    console.log("contract and address",_signer.address,_contract.address);
   }
 
   async createVoucher(
@@ -57,7 +57,7 @@ class fractionSellerVoucher {
     if (this._domain != null) {
       return this._domain;
     }
-    const chainId = await this.contract.getChainID();
+    const chainId = 31337;
     this._domain = {
       name: SIGNING_DOMAIN_NAME,
       version: SIGNING_DOMAIN_VERSION,

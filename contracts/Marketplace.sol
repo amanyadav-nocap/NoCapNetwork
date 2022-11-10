@@ -2,12 +2,15 @@
 pragma solidity ^0.8.14;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/cryptography/EIP712Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
 // import "Interfaces/IVaultfactory.sol";
-import "Interfaces/IVault.sol";
-import "Interfaces/IUSDT.sol";
+import "./Interfaces/IVault.sol";
+import "./Interfaces/IUSDT.sol";
+import "hardhat/console.sol";
+
+
 
 contract Marketplace is EIP712Upgradeable {
     address owner;
@@ -56,7 +59,7 @@ contract Marketplace is EIP712Upgradeable {
                 keccak256(
                     abi.encode(
                         keccak256(
-                            "address nftAddress,address owner,uint256 tokenID,uint256 NFTPrice"
+                            "NFTSeller(address nftAddress,address owner,uint256 tokenID,uint256 NFTPrice)"
                         ),
                         seller.nftAddress,
                         seller.owner,
@@ -86,7 +89,7 @@ contract Marketplace is EIP712Upgradeable {
                 keccak256(
                     abi.encode(
                         keccak256(
-                            "address seller,address fractionVault,uint256 fractionSellAmount,uint256 fractionPrice,uint256 counter"
+                            "fractionSeller(address seller,address fractionVault,uint256 fractionSellAmount,uint256 fractionPrice,uint256 counter)"
                         ),
                         seller.seller,
                         seller.fractionVault,
@@ -117,7 +120,7 @@ contract Marketplace is EIP712Upgradeable {
                 keccak256(
                     abi.encode(
                         keccak256(
-                            "address buyer,address fractionVault,uint256 fractionBuyAmount,uint256 pricePaid"
+                            "fractionBuyer(address buyer,address fractionVault,uint256 fractionBuyAmount,uint256 pricePaid)"
                         ),
                         buyer.buyer,
                         buyer.fractionVault,
@@ -157,22 +160,29 @@ contract Marketplace is EIP712Upgradeable {
         fractionSeller memory seller
     ) external {
         require(seller.fractionVault == buyer.fractionVault, "IV"); // Invalid Vault
+        console.log("price paid",buyer.pricePaid);
+        console.log("price ask ", buyer.fractionBuyAmount * seller.fractionPrice);
         require(
             buyer.pricePaid >= buyer.fractionBuyAmount * seller.fractionPrice,
             "IP"
         ); //Invalid Price
+        console.log("sellersigner",verifyFractionSeller(seller));
         address sellerSigner = verifyFractionSeller(seller);
         address buyerSigner = verifyFractionBuyer(buyer);
+        console.log("sellersigner",seller.seller);
+
         require(sellerSigner == seller.seller, "SI"); //Seller Invalid
         require(buyerSigner == buyer.buyer, "BI"); //Buyer Invalid
 
         setCounter(buyer, seller);
+        console.log("allow");
         IUSDT(usdt).transferFrom(
             buyer.buyer,
             seller.seller,
             buyer.fractionBuyAmount * seller.fractionPrice
         );
-        IVault(seller.fractionVault)._transfer(
+        console.log("allow");
+        IVault(seller.fractionVault).transferFrom(
             seller.seller,
             buyer.buyer,
             buyer.fractionBuyAmount

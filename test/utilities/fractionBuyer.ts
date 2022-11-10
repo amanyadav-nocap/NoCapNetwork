@@ -54,7 +54,7 @@ class fractionBuyerVoucher {
     if (this._domain != null) {
       return this._domain;
     }
-    const chainId = await this.contract.getChainID();
+    const chainId = 31337;
     this._domain = {
       name: SIGNING_DOMAIN_NAME,
       version: SIGNING_DOMAIN_VERSION,
