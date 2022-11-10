@@ -123,6 +123,7 @@ contract vault is
     }
 
     function sellFraction(uint256 _offerNumber, uint256 _amount) external {
+        require(!NFTSold,"NAS");//NFT already sold
         require(balanceOf(msg.sender) != 0, "AV"); //Already Voted
         require(msg.sender != offerredAmounts[_offerNumber].offerrer, "ONA"); //Offerrer not allowed
 
@@ -134,9 +135,7 @@ contract vault is
             marketFeeWallet,
             (payOut * 1) / 100
         ); //Platform Fee
-        console.log("test");
         _transfer(msg.sender, offerredAmounts[_offerNumber].offerrer, _amount);
-        console.log("test 1");
         IUSDT(usdt).transfer(
             address(this),
             msg.sender,
@@ -166,7 +165,7 @@ contract vault is
         finalOfferredAmount = offerredAmounts[_offerNumber].offerred;
     }
 
-    function claimShare() internal {
+    function claimShare() external {
         require(NFTSold, "BNO"); //Buyout Not Over
         uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
