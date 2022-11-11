@@ -13,7 +13,6 @@ import "hardhat/console.sol";
 
 
 contract Marketplace is EIP712Upgradeable {
-    address owner;
     address usdt;
 
     struct fractionSeller {
@@ -41,10 +40,9 @@ contract Marketplace is EIP712Upgradeable {
     mapping(uint256 => bool) public usedCounters;
     mapping(uint256 => uint256) public amountLeft;
 
-    function initialize(address _owner, address _usdt) external initializer {
-        require(_owner != address(0), "ZA"); //Zero Address
+    function initialize(address _usdt) external initializer {
+        require(usdt != address(0), "ZA"); //Zero Address
         __EIP712_init("Chroncept_MarketItem", "1");
-        owner = _owner;
         usdt = _usdt;
     }
 

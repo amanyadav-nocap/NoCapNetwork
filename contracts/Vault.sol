@@ -28,6 +28,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
         address offerrer;
         uint256 offerred;
         uint256 fractionAcquired;
+        bool offeredAmountClaimed;
     }
     mapping(uint256 => offer) private offerredAmounts;
     mapping(address => bool) private excludeFee;
@@ -121,7 +122,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     function sellFraction(uint256 _offerNumber, uint256 _amount) external {
         require(!NFTSold, "NAS"); //NFT already sold
-        require(balanceOf(msg.sender) != 0, "AV"); //Already Voted
+        require(balanceOf(msg.sender) != 0, "NF"); //No Fractions
         require(msg.sender != offerredAmounts[_offerNumber].offerrer, "ONA"); //Offerrer not allowed
 
         offerredAmounts[_offerNumber].fractionAcquired += _amount;
@@ -140,7 +141,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
         );
     }
 
-    function claim(uint256 _offerNumber) external {
+    function claimNFT(uint256 _offerNumber) external {
         require(msg.sender == offerredAmounts[_offerNumber].offerrer, "NO"); //Not Offerrer
         console.log("token Amount", tokenAmount);
         console.log(
@@ -166,13 +167,13 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
 
     function claimShare() external {
         require(NFTSold, "BNO"); //Buyout Not Over
+        require(balanceOf(msg.sender) != 0, "AC");//Already Claimed
         uint256 _amount = balanceOf(msg.sender) * finalOfferredAmount;
         _transfer(msg.sender, address(this), balanceOf(msg.sender));
         IUSDT(usdt).transfer(address(this), msg.sender, _amount);
     }
 
-    function excludeFromFee(address _account, bool _toExclude)
-        external
+    function excludeFromFee(address _account, bool _toExclude) external
         onlyAdmin
     {
         require(_account != address(0), "ZA"); //Zero Address
@@ -180,8 +181,10 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
     }
 
     function claimOfferAmount(uint256 _offerNumber) external {
+        require(offerredAmounts[_offerNumber].offeredAmountClaimed,"AC");//Already Claimed
         uint256 transferAmount = offerredAmounts[_offerNumber]
             .fractionAcquired * offerredAmounts[_offerNumber].offerred;
+            offerredAmounts[_offerNumber].offeredAmountClaimed = true;
         IUSDT(usdt).transfer(
             address(this),
             offerredAmounts[_offerNumber].offerrer,

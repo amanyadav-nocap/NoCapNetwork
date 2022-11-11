@@ -27,7 +27,7 @@ contract vaultFactory is Ownable, Initializable {
     function createVault(
         string memory _name,
         string memory _symbol,
-        uint256 _tokenSupply,
+        uint256 _fractionSupply,
         address _token721,
         uint256 _tokenID,
         uint256 _fractionPrice,
@@ -46,7 +46,7 @@ contract vaultFactory is Ownable, Initializable {
         IVault(_vault).initialize(
             _name,
             _symbol,
-            _tokenSupply,
+            _fractionSupply,
             _token721,
             _tokenID,
             _fractionPrice,
@@ -64,7 +64,7 @@ contract vaultFactory is Ownable, Initializable {
         address implementation,
         address _symbol,
         uint256 _admin
-    ) external view returns (address predicted) {
+    ) internal view returns (address predicted) {
         bytes32 salt = keccak256(abi.encodePacked(_name, _symbol, _admin));
         return
             ClonesUpgradeable.predictDeterministicAddress(
