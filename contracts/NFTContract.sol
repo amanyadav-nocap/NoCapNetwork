@@ -30,7 +30,7 @@ contract ChronNFT is ERC721URIStorageUpgradeable, Ownable {
         address _admin,
         address _taxWallet,
         address _marketFeeWallet
-    ) external onlyOwner{
+    ) external {
         address vault = IVaultfactory(vaultFactory).createVault(
             name,
             symbol,

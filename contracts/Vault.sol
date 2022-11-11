@@ -31,7 +31,7 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
         bool offeredAmountClaimed;
     }
     mapping(uint256 => offer) private offerredAmounts;
-    mapping(address => bool) private excludeFee;
+    mapping(address => bool) public excludeFee;
     modifier onlyAdmin() {
         require(msg.sender == admin, "NA"); //Not Admin
         _;
@@ -62,17 +62,18 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
         offerNumber = 1;
         taxWallet = _taxWallet;
         marketFeeWallet = _marketFeeWallet;
+        excludeFee[address(this)] = true;
     }
 
     function mint(address _to, uint256 _amount) internal {
         //  require(totalSupply()+_amount<=tokenSupply,"IA");//Invalid amount
-        _mint(_to, _amount * 10**decimals());
+        _mint(_to, _amount);
     }
 
     function buyFractions(uint256 _fractionAmount) external {
         require(!primaryBuyEnd, "AFS"); //All Fractions Sold
         require(fractionSupply >= _fractionAmount, "NES"); //Not Enough Supply
-        uint256 amount = _fractionAmount * fractionPrice;
+        uint256 amount = (_fractionAmount * fractionPrice)/10e18;
         IUSDT(usdt).transferFrom(
             msg.sender,
             marketFeeWallet,
@@ -94,11 +95,15 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
         address to,
         uint256 amount
     ) internal virtual override(ERC20Upgradeable) {
+        console.log("tax 0",taxWallet);
         require(to != address(0), "ZA"); //zero address
-        if (excludeFee[from] || excludeFee[to]) {
+        if (excludeFee[from] == true || excludeFee[to]==true) {
             super._transfer(from, to, amount);
+            console.log("tax 1",taxWallet);
         } else {
+            console.log("tax 2",taxWallet);
             uint256 amountTransferred = amount - ((amount * 25) / 1000);
+            console.log("AT",amountTransferred);
             super._transfer(from, taxWallet, (amount * 25) / 1000); //TAX amount
             super._transfer(from, to, amountTransferred);
         }
@@ -190,5 +195,11 @@ contract vault is ERC20Upgradeable, ERC721HolderUpgradeable {
             offerredAmounts[_offerNumber].offerrer,
             transferAmount
         );
+    }
+
+    function viewStatus(address account) external view returns(bool){
+        return excludeFee[account];
+
+
     }
 }

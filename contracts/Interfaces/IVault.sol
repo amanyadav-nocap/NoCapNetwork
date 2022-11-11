@@ -1,5 +1,7 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.14;
+ 
+ import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
 interface IVault {
     function initialize(
@@ -15,7 +17,7 @@ interface IVault {
         address _marketFeeWallet
     ) external;
 
-    function transferFrom(address _from,address _to, uint256 _amount) external returns(bool);
+    function transferFrom(address from, address to, uint256 amount) external ;
 
     function buyFractions(uint256 _fractionAmount) external;
 

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/draft-EIP712Upgradeable.sol";
 // import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 // import "Interfaces/IVaultfactory.sol";
 import "./Interfaces/IVault.sol";
 import "./Interfaces/IUSDT.sol";
@@ -41,7 +42,7 @@ contract Marketplace is EIP712Upgradeable {
     mapping(uint256 => uint256) public amountLeft;
 
     function initialize(address _usdt) external initializer {
-        require(usdt != address(0), "ZA"); //Zero Address
+        require(_usdt != address(0), "ZA"); //Zero Address
         __EIP712_init("Chroncept_MarketItem", "1");
         usdt = _usdt;
     }
@@ -159,9 +160,9 @@ contract Marketplace is EIP712Upgradeable {
     ) external {
         require(seller.fractionVault == buyer.fractionVault, "IV"); // Invalid Vault
         console.log("price paid",buyer.pricePaid);
-        console.log("price ask ", buyer.fractionBuyAmount * seller.fractionPrice);
+        console.log("price ask ", ((buyer.fractionBuyAmount * seller.fractionPrice)/10e18));
         require(
-            buyer.pricePaid >= buyer.fractionBuyAmount * seller.fractionPrice,
+            buyer.pricePaid >= ((buyer.fractionBuyAmount * seller.fractionPrice)/10e18),
             "IP"
         ); //Invalid Price
         console.log("sellersigner",verifyFractionSeller(seller));
@@ -177,10 +178,10 @@ contract Marketplace is EIP712Upgradeable {
         IUSDT(usdt).transferFrom(
             buyer.buyer,
             seller.seller,
-            buyer.fractionBuyAmount * seller.fractionPrice
+            ((buyer.fractionBuyAmount * seller.fractionPrice)/10e18)
         );
-        console.log("allow");
-        IVault(seller.fractionVault).transferFrom(
+        console.log("vault address", seller.fractionVault);
+        IERC20Upgradeable(seller.fractionVault).transferFrom(
             seller.seller,
             buyer.buyer,
             buyer.fractionBuyAmount
