@@ -15,7 +15,7 @@ import { ethers } from "hardhat";
 import { expect } from "chai";
 import "solidity-coverage";
 
-import { expandTo18Decimals } from "./utilities/utilities";
+import { expandTo15Decimals, expandTo16Decimals, expandTo18Decimals } from "./utilities/utilities";
 import fractionSellerVoucher from "./utilities/fractionSeller";
 import fractionBuyerVoucher from "./utilities/fractionBuyer";
 
@@ -175,7 +175,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -191,7 +191,9 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(10)
     );
-    await vault_instance.connect(signers[1]).buyFractions(1);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1));
   });
 
   it("Buy NFT through multiple vault ", async () => {
@@ -202,7 +204,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -214,7 +216,7 @@ describe("chroncept", async () => {
       2,
       "test",
       20,
-      expandTo18Decimals(15),
+      15,
       USDT.address,
       owner.address,
       owner.address,
@@ -239,9 +241,10 @@ describe("chroncept", async () => {
       vault_instance2.address,
       expandTo18Decimals(20)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
-    await vault_instance.connect(signers[1]).buyFractions(1);
-    await vault_instance2.connect(signers[1]).buyFractions(1);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1));
+    await vault_instance2.connect(signers[1]).buyFractions(expandTo18Decimals(1));
   });
 
   it("ERROR: all fractions sold", async () => {
@@ -252,7 +255,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -271,10 +274,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(400)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
-    await vault_instance.connect(signers[1]).buyFractions(30);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(30));
     await expect(
-      vault_instance.connect(signers[1]).buyFractions(1)
+      vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1))
     ).to.be.revertedWith("AFS");
   });
   it("ERROR: Not Enough Supply", async () => {
@@ -285,7 +289,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -304,9 +308,10 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(400)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     await expect(
-      vault_instance.connect(signers[1]).buyFractions(31)
+      vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(31))
     ).to.be.revertedWith("NES");
   });
 
@@ -318,7 +323,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -334,9 +339,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(10)
     );
-    await vault_instance.connect(signers[1]).buyFractions(1);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1));
     await expect(
-      vault_instance.connect(signers[2]).buyFractions(1)
+      vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(1))
     ).to.be.revertedWith("ERC20: insufficient allowance");
   });
 
@@ -348,7 +355,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -364,9 +371,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(10)
     );
-    await vault_instance.connect(signers[1]).buyFractions(1);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1));
     await expect(
-      vault_instance.connect(signers[1]).buyFractions(1)
+      vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(1))
     ).to.be.revertedWith("ERC20: insufficient allowance");
   });
   it("ERROR: Offer buyout before primary buy ends ", async () => {
@@ -377,7 +386,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -393,9 +402,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(300)
     );
-    await vault_instance.connect(signers[1]).buyFractions(29);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(29));
     await expect(
-      vault_instance.connect(signers[1]).makeOffer(expandTo18Decimals(200))
+      vault_instance.connect(signers[1]).makeOffer(200)
     ).to.be.revertedWith("NAY");
   });
 
@@ -407,7 +418,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -423,9 +434,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(1000)
     );
-    await vault_instance.connect(signers[1]).buyFractions(30);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(30));
     await expect(
-      vault_instance.connect(signers[1]).makeOffer(expandTo18Decimals(10))
+      vault_instance.connect(signers[1]).makeOffer(10)
     ).to.be.revertedWith("PL");
   });
 
@@ -437,7 +450,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -453,9 +466,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(1000)
     );
-    await vault_instance.connect(signers[1]).buyFractions(30);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(30));
     await expect(
-      vault_instance.connect(signers[1]).makeOffer(expandTo18Decimals(8))
+      vault_instance.connect(signers[1]).makeOffer(8)
     ).to.be.revertedWith("PL");
   });
 
@@ -467,7 +482,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -483,7 +498,9 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(300)
     );
-    await vault_instance.connect(signers[1]).buyFractions(30);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(30));
     await USDT.connect(owner).mint(
       signers[2].address,
       expandTo18Decimals(1000)
@@ -492,7 +509,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(330)
     );
-    await vault_instance.connect(signers[2]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[2]).makeOffer(11);
   });
 
   it("multiple Buyout offer ", async () => {
@@ -503,7 +520,7 @@ describe("chroncept", async () => {
       1,
       "test",
       30,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -519,7 +536,9 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(300)
     );
-    await vault_instance.connect(signers[1]).buyFractions(30);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(30));
     // 1st buyout offer
     await USDT.connect(owner).mint(
       signers[2].address,
@@ -529,7 +548,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(330)
     );
-    await vault_instance.connect(signers[2]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[2]).makeOffer(11);
     // 2nd buyout offer
     await USDT.connect(owner).mint(
       signers[3].address,
@@ -539,7 +558,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(390)
     );
-    await vault_instance.connect(signers[3]).makeOffer(expandTo18Decimals(13));
+    await vault_instance.connect(signers[3]).makeOffer(13);
     // 3rd buyout offer
     await USDT.connect(owner).mint(
       signers[4].address,
@@ -549,7 +568,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(450)
     );
-    await vault_instance.connect(signers[4]).makeOffer(expandTo18Decimals(15));
+    await vault_instance.connect(signers[4]).makeOffer(15);
     // 4th buyout offer, with same price
     await USDT.connect(owner).mint(
       signers[5].address,
@@ -559,7 +578,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(450)
     );
-    await vault_instance.connect(signers[5]).makeOffer(expandTo18Decimals(15));
+    await vault_instance.connect(signers[5]).makeOffer(15);
   });
 
   // it('votes for multiple buyout ', async () => {
@@ -579,6 +598,7 @@ describe("chroncept", async () => {
   //     await USDT.connect(signers[3]).approve(vault_instance.address, expandTo18Decimals(50));
   //     await USDT.connect(signers[4]).approve(vault_instance.address, expandTo18Decimals(50));
   //     await USDT.connect(signers[5]).approve(vault_instance.address, expandTo18Decimals(100));
+ // await vault_instance.excludeFromFee(vault_instance.address,true);
 
   //     //fractional buy
   //     await vault_instance.connect(signers[1]).buyFractions(5);
@@ -612,7 +632,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -661,12 +681,14 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(100)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(5);
-    await vault_instance.connect(signers[2]).buyFractions(6);
-    await vault_instance.connect(signers[3]).buyFractions(3);
-    await vault_instance.connect(signers[4]).buyFractions(1);
-    await vault_instance.connect(signers[5]).buyFractions(5);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(5));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(6));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(3));
+    await vault_instance.connect(signers[4]).buyFractions(expandTo18Decimals(1));
+    await vault_instance.connect(signers[5]).buyFractions(expandTo18Decimals(5));
     // 1st buyout offer
     await USDT.connect(owner).mint(
       signers[6].address,
@@ -676,7 +698,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
-    await vault_instance.connect(signers[6]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[6]).makeOffer(11);
     // 2nd buyout offer
     await USDT.connect(owner).mint(
       signers[7].address,
@@ -686,9 +708,10 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(260)
     );
-    await vault_instance.connect(signers[7]).makeOffer(expandTo18Decimals(13));
+    await vault_instance.connect(signers[7]).makeOffer(13);
     await expect(
-      vault_instance.connect(signers[6]).voteOffer(1, true)
+      vault_instance.connect(signers[6]).sellFraction(1,expandTo18Decimals(5))
+
     ).to.be.revertedWith("NF");
   });
 
@@ -700,7 +723,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -749,13 +772,14 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(100)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(5);
-    await vault_instance.connect(signers[2]).buyFractions(6);
-    await vault_instance.connect(signers[3]).buyFractions(3);
-    await vault_instance.connect(signers[4]).buyFractions(1);
-    await vault_instance.connect(signers[5]).buyFractions(5);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(5));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(6));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(3));
+    await vault_instance.connect(signers[4]).buyFractions(expandTo18Decimals(1));
+    await vault_instance.connect(signers[5]).buyFractions(expandTo18Decimals(5));
     // 1st buyout offered by fraction holder
     await USDT.connect(owner).mint(
       signers[5].address,
@@ -765,7 +789,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
-    await vault_instance.connect(signers[5]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[5]).makeOffer(11);
     // 2nd buyout offer
     await USDT.connect(owner).mint(
       signers[7].address,
@@ -775,11 +799,11 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(260)
     );
-    await vault_instance.connect(signers[7]).makeOffer(expandTo18Decimals(13));
+    await vault_instance.connect(signers[7]).makeOffer(13);
     //offerer voting for himself
+
     await expect(
-      vault_instance.connect(signers[5]).voteOffer(1, true)
-    ).to.be.revertedWith("ONA");
+      vault_instance.connect(signers[5]).sellFraction(1,expandTo18Decimals(5))).to.be.revertedWith("ONA");
   });
 
   it("voting for buyout successful", async () => {
@@ -790,7 +814,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -799,7 +823,7 @@ describe("chroncept", async () => {
     console.log("owner of NFT", await NFT.connect(owner).ownerOf(1));
     let v1 = await factory.connect(owner).viewVault(1);
     const vault_instance = await new Vault__factory(owner).attach(v1);
-    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(100));
+    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(70));
     await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[3].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
@@ -826,32 +850,34 @@ describe("chroncept", async () => {
     console.log("signer 3", signers[3].address);
     console.log("signer 6", signers[6].address);
     console.log("vault", vault_instance.address);
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(7);
-    await vault_instance.connect(signers[2]).buyFractions(9);
-    await vault_instance.connect(signers[3]).buyFractions(4);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(7));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(9));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(4));
 
     // 1st buyout offer
-    await vault_instance.connect(signers[6]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[6]).makeOffer(11);
     // vote
     // await vault_instance.connect(signers[1]).approve(signers[1].address,7);
     console.log(
       "balanceeeee",
       await vault_instance.balanceOf(signers[1].address)
     );
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(7));
+
+    // await vault_instance.connect(signers[1]).voteOffer(1, true);
     console.log("balanceeeee", await USDT.balanceOf(signers[6].address));
-    expect(await USDT.balanceOf(signers[1].address)).to.be.eq(
-      expandTo18Decimals(107)
-    );
+    expect(await USDT.balanceOf(signers[1].address)).to.be.eq(expandTo16Decimals(7623));
+
     expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(0);
+    await vault_instance.connect(signers[3]).sellFraction(1,expandTo18Decimals(4));
 
-    await vault_instance.connect(signers[2]).voteOffer(1, false);
-    await vault_instance.connect(signers[3]).voteOffer(1, true);
+    // await vault_instance.connect(signers[3]).voteOffer(1, true);
     expect(await vault_instance.balanceOf(signers[3].address)).to.be.eq(0);
+    expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(expandTo15Decimals(10725));
 
-    expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(11);
 
     await vault_instance.connect(signers[6]).claim(1);
 
@@ -866,7 +892,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -874,7 +900,7 @@ describe("chroncept", async () => {
     );
     let v1 = await factory.connect(owner).viewVault(1);
     const vault_instance = await new Vault__factory(owner).attach(v1);
-    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(100));
+    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(70));
     await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[3].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
@@ -895,18 +921,20 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(7);
-    await vault_instance.connect(signers[2]).buyFractions(9);
-    await vault_instance.connect(signers[3]).buyFractions(4);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(7));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(9));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(4));
 
     // 1st buyout offer
-    await vault_instance.connect(signers[6]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[6]).makeOffer(11);
     // vote
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
-    await vault_instance.connect(signers[2]).voteOffer(1, false);
-    await vault_instance.connect(signers[3]).voteOffer(1, false);
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(7));
+
+    // await vault_instance.connect(signers[1]).voteOffer(1, true);
+ 
     //console.log("spender",await(USDT.allowance(signers[1].address,vault_instance.address)));
     await expect(
       vault_instance.connect(signers[6]).claim(1)
@@ -921,7 +949,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -933,7 +961,6 @@ describe("chroncept", async () => {
     await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[3].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
-
     await USDT.connect(signers[1]).approve(
       vault_instance.address,
       expandTo18Decimals(70)
@@ -951,22 +978,29 @@ describe("chroncept", async () => {
       expandTo18Decimals(220)
     );
   
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(7);
-    await vault_instance.connect(signers[2]).buyFractions(9);
-    await vault_instance.connect(signers[3]).buyFractions(4);
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(7));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(9));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(4));
+    console.log("hey");
 
     // 1st buyout offer
-    await vault_instance.connect(signers[6]).makeOffer(expandTo18Decimals(11));
+    await vault_instance.connect(signers[6]).makeOffer(11);
     // vote
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
-    await vault_instance.connect(signers[2]).voteOffer(1, false);
-    await vault_instance.connect(signers[3]).voteOffer(1, true);
+    console.log("hey1");
+
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(7));
+    console.log("hey2");
+
+
+    await vault_instance.connect(signers[3]).sellFraction(1,expandTo18Decimals(4));
+
+    // await vault_instance.connect(signers[1]).voteOffer(1, true);
+    // await vault_instance.connect(signers[3]).voteOffer(1, true);
     //console.log("spender",await(USDT.allowance(signers[1].address,vault_instance.address)));
-    await expect(
-      vault_instance.connect(signers[4]).claim(1)
-    ).to.be.revertedWith("NO");
+    await expect(vault_instance.connect(signers[4]).claim(1)).to.be.revertedWith("NO");
   });
 
   it("Claim share after buyout succesfull", async () => {
@@ -1007,6 +1041,7 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     //fractional buy
     await vault_instance
@@ -1031,7 +1066,9 @@ describe("chroncept", async () => {
       "fraction balance",
       await vault_instance.balanceOf(signers[1].address)
     );
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(11));
+
+   // await vault_instance.connect(signers[1]).voteOffer(1, true);
     console.log(
       "fraction balance",
       await vault_instance.balanceOf(owner.address)
@@ -1065,7 +1102,7 @@ describe("chroncept", async () => {
       1,
       "test",
       20,
-      expandTo18Decimals(10),
+      10,
       USDT.address,
       owner.address,
       owner.address,
@@ -1074,7 +1111,7 @@ describe("chroncept", async () => {
     console.log("owner of NFT", await NFT.connect(owner).ownerOf(1));
     let v1 = await factory.connect(owner).viewVault(1);
     const vault_instance = await new Vault__factory(owner).attach(v1);
-    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(100));
+    await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(70));
     await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[3].address, expandTo18Decimals(100));
     await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
@@ -1095,35 +1132,44 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(220)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
+
     //fractional buy
-    await vault_instance.connect(signers[1]).buyFractions(7);
-    await vault_instance.connect(signers[2]).buyFractions(9);
-    await vault_instance.connect(signers[3]).buyFractions(4);
+    console.log("hey");
+    await vault_instance.connect(signers[1]).buyFractions(expandTo18Decimals(7));
+    await vault_instance.connect(signers[2]).buyFractions(expandTo18Decimals(9));
+    await vault_instance.connect(signers[3]).buyFractions(expandTo18Decimals(4));
 
     // 1st buyout offer
-    await vault_instance.connect(signers[6]).makeOffer(expandTo18Decimals(11));
+    console.log("hey");
+
+    await vault_instance.connect(signers[6]).makeOffer(11);
     // vote
+    console.log("hey1");
+
     // await vault_instance.connect(signers[1]).approve(signers[1].address,7);
     console.log(
       "balanceeeee",
       await vault_instance.balanceOf(signers[1].address)
     );
-    await vault_instance.connect(signers[1]).voteOffer(1, true);
-    console.log("balanceeeee", await USDT.balanceOf(signers[6].address));
-    expect(await USDT.balanceOf(signers[1].address)).to.be.eq(
-      expandTo18Decimals(107)
-    );
+    await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(7));
+    console.log("hey");
+
+    console.log("balance of signers 6", await USDT.balanceOf(signers[6].address));
+    console.log("balance of signers 1", await USDT.balanceOf(signers[1].address));
+
+    expect(await USDT.balanceOf(signers[1].address)).to.be.eq(expandTo16Decimals(7623));
     expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(0);
 
-    await vault_instance.connect(signers[2]).voteOffer(1, false);
-    await vault_instance.connect(signers[3]).voteOffer(1, true);
+    await vault_instance.connect(signers[3]).sellFraction(1,expandTo18Decimals(4));
     expect(await vault_instance.balanceOf(signers[3].address)).to.be.eq(0);
+    expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(expandTo15Decimals(10725));
 
-    expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(11);
+   // expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(11);
 
     await vault_instance.connect(signers[6]).claim(1);
     expect(await vault_instance.balanceOf(signers[6].address)).to.be.eq(0);
-    expect(await vault_instance.balanceOf(vault_instance.address)).to.be.eq(11);
+    expect(await vault_instance.balanceOf(vault_instance.address)).to.be.eq(expandTo15Decimals(10725));
 
     expect(await NFT.connect(owner).ownerOf(1)).to.be.eq(signers[6].address);
 
@@ -1276,12 +1322,13 @@ describe("chroncept", async () => {
       vault_instance.address,
       expandTo18Decimals(40)
     );
+    await vault_instance.excludeFromFee(vault_instance.address,true);
 
     expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(0);
     await vault_instance
       .connect(signers[1])
       .buyFractions(expandTo18Decimals(7));
-    expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(7);
+    expect(await vault_instance.balanceOf(signers[1].address)).to.be.eq(expandTo18Decimals(7));
     await vault_instance
       .connect(signers[2])
       .buyFractions(expandTo18Decimals(9));
@@ -1428,7 +1475,9 @@ describe("chroncept", async () => {
   //     "fraction balance",
   //     await vault_instance.balanceOf(signers[1].address)
   //   );
-  //   await vault_instance.connect(signers[1]).voteOffer(1);
+ // await vault_instance.connect(signers[1]).sellFraction(1,expandTo18Decimals(12));
+
+  ////   await vault_instance.connect(signers[1]).voteOffer(1);
   //   console.log(
   //     "fraction balance",
   //     await vault_instance.balanceOf(owner.address)
@@ -1446,7 +1495,9 @@ describe("chroncept", async () => {
 
   //   expect(await NFT.connect(owner).ownerOf(1)).to.be.eq(signers[6].address);
   //   console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
-  //   await vault_instance.connect(signers[2]).voteOffer(1);
+  ///await vault_instance.connect(signers[2]).sellFraction(1,expandTo18Decimals(8));
+
+//  //   await vault_instance.connect(signers[2]).voteOffer(1);
   //   console.log("signers 2 balance",await USDT.balanceOf(signers[2].address));
   //   console.log("vault  balance   ",await USDT.balanceOf(vault_instance.address));
 
@@ -1457,7 +1508,7 @@ describe("chroncept", async () => {
   //   //  await expect (vault_instance.connect(signers[1]).claimShare()).to.be.revertedWith("AC");
   // });
 
-      it.only("test vouchers", async () => {
+      it("test vouchers", async () => {
         await factory.connect(owner).addOperator(NFT.address, true);
         await NFT.connect(owner).safeMint(
           "test_name",
@@ -1531,13 +1582,335 @@ describe("chroncept", async () => {
             marketplace.address,
             expandTo18Decimals(1000)
           );
+
+          // additional approval 
           await vault_instance.connect(signers[1]).approve(
             marketplace.address,
             expandTo18Decimals(1000)
           );
+
             console.log("signers 1",signers[1].address);
           await  marketplace.fractionTrade(buyerVoucher,sellerVoucher);
           console.log("buyer balance",await vault_instance.balanceOf(signers[4].address));
+
+
       });
+
+      it("ERROR: invalid vault address", async () => {
+        await factory.connect(owner).addOperator(NFT.address, true);
+        await NFT.connect(owner).safeMint(
+          "test_name",
+          "test_symbol",
+          1,
+          "test",
+          20,
+          10,
+          USDT.address,
+          owner.address,
+          owner.address,
+          owner.address
+        );
+        let v1 = await factory.connect(owner).viewVault(1);
+        const vault_instance = await new Vault__factory(owner).attach(v1);
+        await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
+        await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
+        await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
+        await USDT.connect(owner).mint(signers[4].address, expandTo18Decimals(250));
+
+        await USDT.connect(signers[1]).approve(
+          vault_instance.address,
+          expandTo18Decimals(120)
+        );
+        await USDT.connect(signers[2]).approve(
+          vault_instance.address,
+          expandTo18Decimals(80)
+        );
+        await USDT.connect(signers[6]).approve(
+          vault_instance.address,
+          expandTo18Decimals(220)
+        );
+
+        await USDT.connect(signers[4]).approve(
+          vault_instance.address,
+          expandTo18Decimals(250)
+        );
+
+        await vault_instance.excludeFromFee(vault_instance.address,true);
+        //fractional buy
+        await vault_instance
+          .connect(signers[1])
+          .buyFractions(expandTo18Decimals(12));
+        await vault_instance
+          .connect(signers[2])
+          .buyFractions(expandTo18Decimals(8));
+      
+          const seller = await new fractionSellerVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+          });
+          const sellerVoucher = await seller.createVoucher(
+            signers[1].address,
+            vault_instance.address,
+            5,
+            20,
+            1
+          )
+
+          const buyer = await new fractionBuyerVoucher({
+            _contract: marketplace,
+            _signer: signers[4],
+          });
+          const buyerVoucher = await buyer.createVoucher(
+            signers[4].address,
+            signers[2].address,
+            5,
+            100,    
+          )
+          await USDT.connect(signers[4]).approve(
+            marketplace.address,
+            expandTo18Decimals(1000)
+          );
+            console.log("signers 1",signers[1].address);
+          await expect(marketplace.fractionTrade(buyerVoucher,sellerVoucher)).to.be.revertedWith("IV");
+      });
+
+      it("ERROR: invalid vault address", async () => {
+        await factory.connect(owner).addOperator(NFT.address, true);
+        await NFT.connect(owner).safeMint(
+          "test_name",
+          "test_symbol",
+          1,
+          "test",
+          20,
+          10,
+          USDT.address,
+          owner.address,
+          owner.address,
+          owner.address
+        );
+        let v1 = await factory.connect(owner).viewVault(1);
+        const vault_instance = await new Vault__factory(owner).attach(v1);
+        await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
+        await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
+        await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
+        await USDT.connect(owner).mint(signers[4].address, expandTo18Decimals(250));
+
+        await USDT.connect(signers[1]).approve(
+          vault_instance.address,
+          expandTo18Decimals(120)
+        );
+        await USDT.connect(signers[2]).approve(
+          vault_instance.address,
+          expandTo18Decimals(80)
+        );
+        await USDT.connect(signers[6]).approve(
+          vault_instance.address,
+          expandTo18Decimals(220)
+        );
+
+        await USDT.connect(signers[4]).approve(
+          vault_instance.address,
+          expandTo18Decimals(250)
+        );
+
+        await vault_instance.excludeFromFee(vault_instance.address,true);
+        //fractional buy
+        await vault_instance
+          .connect(signers[1])
+          .buyFractions(expandTo18Decimals(12));
+        await vault_instance
+          .connect(signers[2])
+          .buyFractions(expandTo18Decimals(8));
+      
+          const seller = await new fractionSellerVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+          });
+          const sellerVoucher = await seller.createVoucher(
+            signers[1].address,
+            vault_instance.address,
+            5,
+            20,
+            1
+          )
+
+          const buyer = await new fractionBuyerVoucher({
+            _contract: marketplace,
+            _signer: signers[4],
+          });
+          const buyerVoucher = await buyer.createVoucher(
+            signers[4].address,
+            signers[2].address,
+            5,
+            100,    
+          )
+          await USDT.connect(signers[4]).approve(
+            marketplace.address,
+            expandTo18Decimals(1000)
+          );
+            console.log("signers 1",signers[1].address);
+          await expect(marketplace.fractionTrade(buyerVoucher,sellerVoucher)).to.be.revertedWith("IV");
+      });
+
+      it("ERROR: invalid price", async () => {
+        await factory.connect(owner).addOperator(NFT.address, true);
+        await NFT.connect(owner).safeMint(
+          "test_name",
+          "test_symbol",
+          1,
+          "test",
+          20,
+          10,
+          USDT.address,
+          owner.address,
+          owner.address,
+          owner.address
+        );
+        let v1 = await factory.connect(owner).viewVault(1);
+        const vault_instance = await new Vault__factory(owner).attach(v1);
+        await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
+        await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
+        await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
+        await USDT.connect(owner).mint(signers[4].address, expandTo18Decimals(250));
+
+        await USDT.connect(signers[1]).approve(
+          vault_instance.address,
+          expandTo18Decimals(120)
+        );
+        await USDT.connect(signers[2]).approve(
+          vault_instance.address,
+          expandTo18Decimals(80)
+        );
+        await USDT.connect(signers[6]).approve(
+          vault_instance.address,
+          expandTo18Decimals(220)
+        );
+
+        await USDT.connect(signers[4]).approve(
+          vault_instance.address,
+          expandTo18Decimals(250)
+        );
+
+        await vault_instance.excludeFromFee(vault_instance.address,true);
+        //fractional buy
+        await vault_instance
+          .connect(signers[1])
+          .buyFractions(expandTo18Decimals(12));
+        await vault_instance
+          .connect(signers[2])
+          .buyFractions(expandTo18Decimals(8));
+      
+          const seller = await new fractionSellerVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+          });
+          const sellerVoucher = await seller.createVoucher(
+            signers[1].address,
+            vault_instance.address,
+            5,
+            20,
+            1
+          )
+
+          const buyer = await new fractionBuyerVoucher({
+            _contract: marketplace,
+            _signer: signers[4],
+          });
+          const buyerVoucher = await buyer.createVoucher(
+            signers[4].address,
+            vault_instance.address,
+            5,
+            90,    
+          )
+          await USDT.connect(signers[4]).approve(
+            marketplace.address,
+            expandTo18Decimals(1000)
+          );
+            console.log("signers 1",signers[1].address);
+          await expect(marketplace.fractionTrade(buyerVoucher,sellerVoucher)).to.be.revertedWith("IP");
+      });
+
+      it("ERROR: invalid signer", async () => {
+        await factory.connect(owner).addOperator(NFT.address, true);
+        await NFT.connect(owner).safeMint(
+          "test_name",
+          "test_symbol",
+          1,
+          "test",
+          20,
+          10,
+          USDT.address,
+          owner.address,
+          owner.address,
+          owner.address
+        );
+        let v1 = await factory.connect(owner).viewVault(1);
+        const vault_instance = await new Vault__factory(owner).attach(v1);
+        await USDT.connect(owner).mint(signers[1].address, expandTo18Decimals(120));
+        await USDT.connect(owner).mint(signers[2].address, expandTo18Decimals(100));
+        await USDT.connect(owner).mint(signers[6].address, expandTo18Decimals(250));
+        await USDT.connect(owner).mint(signers[4].address, expandTo18Decimals(250));
+
+        await USDT.connect(signers[1]).approve(
+          vault_instance.address,
+          expandTo18Decimals(120)
+        );
+        await USDT.connect(signers[2]).approve(
+          vault_instance.address,
+          expandTo18Decimals(80)
+        );
+        await USDT.connect(signers[6]).approve(
+          vault_instance.address,
+          expandTo18Decimals(220)
+        );
+
+        await USDT.connect(signers[4]).approve(
+          vault_instance.address,
+          expandTo18Decimals(250)
+        );
+
+        await vault_instance.excludeFromFee(vault_instance.address,true);
+        //fractional buy
+        await vault_instance
+          .connect(signers[1])
+          .buyFractions(expandTo18Decimals(12));
+        await vault_instance
+          .connect(signers[2])
+          .buyFractions(expandTo18Decimals(8));
+      
+          const seller = await new fractionSellerVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+          });
+          const sellerVoucher = await seller.createVoucher(
+            signers[2].address,
+            vault_instance.address,
+            5,
+            20,
+            1
+          )
+
+          const buyer = await new fractionBuyerVoucher({
+            _contract: marketplace,
+            _signer: signers[4],
+          });
+          const buyerVoucher = await buyer.createVoucher(
+            signers[4].address,
+            vault_instance.address,
+            5,
+            100,    
+          )
+          await USDT.connect(signers[4]).approve(
+            marketplace.address,
+            expandTo18Decimals(1000)
+          );
+            console.log("signers 1",signers[1].address);
+          await expect(marketplace.fractionTrade(buyerVoucher,sellerVoucher)).to.be.revertedWith("SI");
+      });
+
+
+
+
+
 
 });
