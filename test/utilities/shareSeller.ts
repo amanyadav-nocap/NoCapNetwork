@@ -1,13 +1,11 @@
-// import { ethers ,waffle} from "hardhat";
-
-const SIGNING_DOMAIN_NAME = "Chroncept_MarketItem"; // encode krne ke liye salt lgti hai  ex:-  adding formula  values alg dono ki 2 persons
+const SIGNING_DOMAIN_NAME = "Chroncept_MarketItem";
 const SIGNING_DOMAIN_VERSION = "1";
 
 /**
  *
  * LazyMinting is a helper class that creates NFTVoucher objects and signs them, to be redeemed later by the LazyNFT contract.
  */
-class fractionSellerVoucher {
+class shareSellerVoucher {
   public contract: any;
   public signer: any;
   public _domain: any;
@@ -18,31 +16,36 @@ class fractionSellerVoucher {
     const { _contract, _signer } = data;
     this.contract = _contract;
     this.signer = _signer;
-    console.log("contract and address",_signer.address,_contract.address);
   }
 
   async createVoucher(
     seller: any,
-    fractionVault: any,
-    fractionSellAmount: any,
-    fractionPrice: any,
-    counter: any
+    NFTAddress: any,
+    tokenId: any,
+    shareSellAmount: any,
+    sharePrice: any,
+    counter: any,
+    tokenUri: any
   ) {
     const voucher = {
       seller,
-      fractionVault,
-      fractionSellAmount,
-      fractionPrice,
+      NFTAddress,
+      tokenId,
+      shareSellAmount,
+      sharePrice,
       counter,
+      tokenUri,
     };
     const domain = await this._signingDomain();
     const types = {
-      fractionSeller: [
+      shareSeller: [
         { name: "seller", type: "address" },
-        { name: "fractionVault", type: "address" },
-        { name: "fractionSellAmount", type: "uint256" },
-        { name: "fractionPrice", type: "uint256" },
+        { name: "NFTAddress", type: "address" },
+        { name: "tokenId", type: "uint256" },
+        { name: "shareSellAmount", type: "uint256" },
+        { name: "sharePrice", type: "uint256" },
         { name: "counter", type: "uint256" },
+        { name: "tokenUri", type: "string" },
       ],
     };
 
@@ -68,4 +71,4 @@ class fractionSellerVoucher {
   }
 }
 
-export default fractionSellerVoucher;
+export default shareSellerVoucher;

@@ -1,23 +1,42 @@
-import { ethers } from "hardhat";
+import { SignerWithAddress } from "../node_modules/@nomiclabs/hardhat-ethers/signers";
+import { ethers, network } from "hardhat";
+import {
+  expandTo18Decimals,
+  expandTo6Decimals,
+} from "../test/utilities/utilities";
+import { NoCapFactory, NoCapTemplateERC721, NoCapMarketplace,NoCapSecurityTokenFactory } from "../typechain-types";
+
+function sleep(ms: any) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+    const factory = await ethers.getContractFactory("NoCapFactory");
+    const marketplace = await ethers.getContractFactory("NoCapMarketplace");
+    const template = await ethers.getContractFactory("NoCapTemplateERC721");
+    const stoFactory = await ethers.getContractFactory("NoCapSecurityTokenFactory");
 
-  const lockedAmount = ethers.utils.parseEther("1");
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
 
-  await lock.deployed();
+    const Factory = await factory.deploy();
+    await sleep(2000);
+    const Marketplace = await marketplace.deploy();
+    await sleep(2000);
+    const Template = await template.deploy();
+    await sleep(2000);
+    const STOFactory = await stoFactory.deploy();
+    await sleep(2000);
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
-}
+    console.log("Factory Address- "+Factory.address);
+    console.log("Marketplace Address- "+Marketplace.address);
+    console.log("Template Address- "+Template.address);
+    console.log("STOFactory Address- "+STOFactory.address);
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+}  
+
+main()
+.then(()=>process.exit(0))
+.catch((error)=>{
+    console.error(error);
+    process.exit(1);
+}) ;
