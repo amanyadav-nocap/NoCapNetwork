@@ -13,10 +13,10 @@ export default {
       allowUnlimitedContractSize: true,
 
     },
-    mumbaitest: {
-      url: "https://rpc-mumbai.maticvigil.com/",
-      accounts: [`0x${process.env.PVTKEY}`]
-    },
+    // mumbaitest: {
+    //   url: "https://rpc-mumbai.maticvigil.com/",
+    //   accounts: [`0x${process.env.PVTKEY}`]
+    // },
     // matic: {
     //   url: "https://polygon-rpc.com/",
     //   accounts: [`0x${process.env.PVTKEY}`]

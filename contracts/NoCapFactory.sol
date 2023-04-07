@@ -41,16 +41,15 @@ contract NoCapFactory is Initializable, OwnableUpgradeable {
         securityTokenFactory = _securityTokenFactory;
     }
 
-    function deployNFTCollection(string memory _name, string memory _symbol, address _creator, uint96 _royalty, address _token) external onlyAdmin returns(address){
+    function deployNFTCollection(string memory _name, string memory _symbol, address _creator, uint96 _royalty) external onlyAdmin returns(address){
         
-        require(_token!=address(0),"Zero address.");
         require(_creator!=address(0),"Zero address.");
         Collection storage col = collections[msg.sender];
         col.totalCollections++;
         bytes32 salt = keccak256(abi.encodePacked(col.totalCollections,_creator));
         address NFT = ClonesUpgradeable.cloneDeterministic(templateAddress, salt);
         col.collectionAddress[col.totalCollections] = NFT;
-        INoCapTemplate(NFT).initialize(_name, _symbol, _creator, _royalty, _token, marketPlace, securityTokenFactory);
+        INoCapTemplate(NFT).initialize(_name, _symbol, _creator, _royalty, marketPlace, securityTokenFactory);
         emit NFTCreated(col.totalCollections, NFT, _creator);
         isNoCapNFT[NFT] = true;
         return NFT;

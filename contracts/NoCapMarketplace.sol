@@ -76,7 +76,7 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable {
 
     function buyNFT(Voucher.NFTVoucher memory voucher,
         bool isPrimary,
-        address currency) external payable {
+        address currency) external payable returns(address){
         
         address sellerAddress = verifyVoucher(voucher);
 
@@ -95,9 +95,10 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable {
                 IERC20(currency).transferFrom(msg.sender, address(this), platformAmount);
                 IERC20(currency).transferFrom(msg.sender, voucher.seller, (voucher.pricePerFraction)*voucher.fractions);
             }
-            INoCapTemplate(voucher.NFTAddress).MintNft(msg.sender, voucher.tokenId, voucher.tokenURI,voucher.seller,voucher.maxFractions, voucher.fractions, voucher.royaltyFees);
+            address STO = INoCapTemplate(voucher.NFTAddress).MintNft(msg.sender, voucher.tokenId, voucher.tokenURI,voucher.seller,voucher.maxFractions, voucher.fractions, voucher.royaltyFees);
             fractionsNFT[voucher.NFTAddress][voucher.tokenId].totalFractions = voucher.maxFractions;
             fractionsNFT[voucher.NFTAddress][voucher.tokenId].fractionsLeft = voucher.maxFractions - voucher.fractions;
+            return STO;
                         //emit event for nft creation
         }
         else{

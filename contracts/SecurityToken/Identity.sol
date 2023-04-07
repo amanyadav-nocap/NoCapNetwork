@@ -13,7 +13,7 @@ contract Identity is Storage, IIdentity, Version {
     bool private initialized = false;
     bool private canInteract = true;
 
-    constructor(address initialManagementKey, bool _isLibrary) {
+    function init(address initialManagementKey, bool _isLibrary) external {
         canInteract = !_isLibrary;
 
         if (canInteract) {
@@ -36,9 +36,9 @@ contract Identity is Storage, IIdentity, Version {
      *
      * @param initialManagementKey The ethereum address to be set as the management key of the ONCHAINID.
      */
-    function initialize(address initialManagementKey) public {
-        __Identity_init(initialManagementKey);
-    }
+    // function initialize(address initialManagementKey) public {
+    //     __Identity_init(initialManagementKey);
+    // }
 
     /**
      * @notice Computes if the context in which the function is called is a constructor or not.

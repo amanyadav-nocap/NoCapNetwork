@@ -15,7 +15,6 @@ import "contracts/Interfaces/ITokenST.sol";
 
 contract NoCapTemplateERC721 is ERC721URIStorageUpgradeable, ERC2981Upgradeable, EIP712Upgradeable, Ownable {
 
-address public currencyToken;
 address public admin;
 address public securityTokenFactory;
 uint96 public royaltyAmount;
@@ -29,15 +28,14 @@ modifier onlyAdmin{
     _;
 }
 
-function initialize(string memory _name, string memory _symbol, address _admin, uint96 _royaltyAmount, address _token, address _marketPlace, address _securityTokenFactory) external initializer {
+function initialize(string memory _name, string memory _symbol, address _admin, uint96 _royaltyAmount,address _marketPlace, address _securityTokenFactory) external initializer {
     require(_admin != address(0), "ZAA"); //Zero Address for Admin
-    require(_token != address(0), "ZAU"); //Zero Address for USDC
     require(_marketPlace != address(0), "ZAM");//Zero Address for Marketplace
     __ERC721_init_unchained(_name, _symbol);
     __ERC2981_init_unchained();
     __EIP712_init_unchained(_name, "1");
     royaltyAmount = _royaltyAmount;
-    currencyToken = _token;
+    
     marketPlace = _marketPlace;
     securityTokenFactory = _securityTokenFactory;
 }
@@ -103,7 +101,7 @@ function supportsInterface(bytes4 interfaceId)
     return _exists(_tokenId);
  }   
 
- function MintNft(address _to, uint _tokenId, string memory _tokenURI, address _royaltyKeeper,uint256 _maxFractions, uint256 _fractions, uint96 _royaltyFees) external {
+ function MintNft(address _to, uint _tokenId, string memory _tokenURI, address _royaltyKeeper,uint256 _maxFractions, uint256 _fractions, uint96 _royaltyFees) external returns(address){
      require(msg.sender== marketPlace, "Call only allowed from marketplace");
      if(STOForTokenId[_tokenId]==address(0)){
      address STO = ISecurityTokenFactory(securityTokenFactory).deployTokenForNFT("NoCap NFT STO", "NOCAPSTO", 0, _tokenId,_maxFractions);
@@ -118,10 +116,13 @@ function supportsInterface(bytes4 interfaceId)
      else {
         ITokenST(STOForTokenId[_tokenId]).mint(_to, _fractions);
      }
+     return STOForTokenId[_tokenId];
 }
 
      function getSTOForTokenId(uint256 _tokenId) external view returns(address){
         return STOForTokenId[_tokenId];
      }
+
+     
 
 }

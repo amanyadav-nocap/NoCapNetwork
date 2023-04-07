@@ -44,15 +44,18 @@ describe("STO Marketplace", ()=>{
         implementationAuthority = await new ImplementationAuthority__factory(owner).deploy(token.address);
         trustedIssuersRegistry = await new TrustedIssuersRegistry__factory(owner).deploy();
         claimsTopicsRegistry = await new ClaimTopicsRegistry__factory(owner).deploy();
-        OwnerIdentity = await new Identity__factory(owner).deploy(owner.address,false);
-        customer1 = await new Identity__factory(owner).deploy(signers[1].address,false);
-        customer2 = await new Identity__factory(owner).deploy(signers[2].address,false);
-        marketplaceId = await new Identity__factory(owner).deploy(marketplace.address,true);
+        OwnerIdentity = await new Identity__factory(owner).deploy();
+        customer1 = await new Identity__factory(owner).deploy();
+        customer2 = await new Identity__factory(owner).deploy();
+        // marketplaceId = await new Identity__factory(owner).deploy(marketplace.address,false);
         // Init for the contracts :
         
+        await OwnerIdentity.connect(owner).init(owner.address,false);
+        await customer1.connect(signers[1]).init(signers[1].address,false);
+        await customer2.connect(signers[2]).init(signers[2].address,false);
         await factory.connect(owner).initialize(template.address,owner.address,marketplace.address, STOFactory.address);
         await marketplace.connect(owner).initialize(owner.address,template.address,200,usdt.address);
-        await factory.connect(owner).deployNFTCollection("NoCapSampleNFT","NCP",owner.address,200,usdt.address);
+        await factory.connect(owner).deployNFTCollection("NoCapSampleNFT","NCP",owner.address,200);
         await identityRegistryStorage.connect(owner).init();
         await identityRegistry.connect(owner).init(trustedIssuersRegistry.address,claimsTopicsRegistry.address,identityRegistryStorage.address);
         await claimsTopicsRegistry.connect(owner).init();
@@ -64,7 +67,7 @@ describe("STO Marketplace", ()=>{
         await identityRegistry.connect(owner).registerIdentity(signers[2].address,customer2.address,2);
         await STOFactory.connect(owner).init(token.address,compliance.address,owner.address,identityRegistry.address,marketplace.address,factory.address);
         await STOFactory.connect(owner).addAuthorizedCountries([1,2]);
-        await identityRegistry.connect(owner).registerIdentity(marketplace.address,marketplaceId.address,1);
+        // await identityRegistry.connect(owner).registerIdentity(marketplace.address,marketplaceId.address,1);
     })
 
     it("Lazy Minting Test Initial", async()=>{
