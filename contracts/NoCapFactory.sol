@@ -41,7 +41,7 @@ contract NoCapFactory is Initializable, OwnableUpgradeable {
         securityTokenFactory = _securityTokenFactory;
     }
 
-    function deployNFTCollection(string memory _name, string memory _symbol, address _creator, uint96 _royalty) external onlyAdmin returns(address){
+    function deployNFTCollection(string memory _name, string memory _symbol, address _creator, uint96 _royalty) external returns(address){
         
         require(_creator!=address(0),"Zero address.");
         Collection storage col = collections[msg.sender];
@@ -56,6 +56,7 @@ contract NoCapFactory is Initializable, OwnableUpgradeable {
     }
 
     function updateTemplateAddress(address _newTemplate) external onlyAdmin {
+        require(_newTemplate!=address(0),"Zero address.");
         templateAddress = _newTemplate;
     }
 

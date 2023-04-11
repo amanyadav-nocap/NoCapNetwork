@@ -1,9 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
-import { ClaimTopicsRegistry, ClaimTopicsRegistry__factory, DefaultCompliance, DefaultCompliance__factory, Identity, IdentityRegistry, IdentityRegistryStorage, IdentityRegistryStorage__factory, IdentityRegistry__factory, Identity__factory, ImplementationAuthority, ImplementationAuthority__factory, NoCapFactory, NoCapFactory__factory, NoCapMarketplace, NoCapMarketplace__factory, NoCapSecurityTokenFactory, NoCapSecurityTokenFactory__factory, NoCapTemplateERC721, NoCapTemplateERC721__factory, TokenST, TokenST__factory, TrustedIssuersRegistry, TrustedIssuersRegistry__factory, USDT, USDT__factory } from "../typechain-types";
+import { ClaimTopicsRegistry, ClaimTopicsRegistry__factory, DefaultCompliance, DefaultCompliance__factory, Identity, IdentityFactory, IdentityFactory__factory, IdentityRegistry, IdentityRegistryStorage, IdentityRegistryStorage__factory, IdentityRegistry__factory, Identity__factory, ImplementationAuthority, ImplementationAuthority__factory, NoCapFactory, NoCapFactory__factory, NoCapMarketplace, NoCapMarketplace__factory, NoCapSecurityTokenFactory, NoCapSecurityTokenFactory__factory, NoCapTemplateERC721, NoCapTemplateERC721__factory, TokenST, TokenST__factory, TrustedIssuersRegistry, TrustedIssuersRegistry__factory, USDT, USDT__factory } from "../typechain-types";
 import { TrustedIssuerAddedEvent } from "../typechain-types/contracts/SecurityToken/interface/ITrustedIssuersRegistry";
 import { expandTo18Decimals } from "./utilities/utilities";
 import NoCapVoucher from "./utilities/voucher";
+import { expect } from "chai";
 
 describe("STO Marketplace", ()=>{
 
@@ -20,9 +21,8 @@ describe("STO Marketplace", ()=>{
     let implementationAuthority : ImplementationAuthority;
     let trustedIssuersRegistry : TrustedIssuersRegistry;
     let claimsTopicsRegistry : ClaimTopicsRegistry;
-    let OwnerIdentity : Identity;
-    let customer1 : Identity;
-    let customer2 : Identity;
+    let identityTemplate : Identity;
+    let identityFactory : IdentityFactory;
     let STOFactory : NoCapSecurityTokenFactory;
     let marketplaceId : Identity;
 
@@ -44,15 +44,13 @@ describe("STO Marketplace", ()=>{
         implementationAuthority = await new ImplementationAuthority__factory(owner).deploy(token.address);
         trustedIssuersRegistry = await new TrustedIssuersRegistry__factory(owner).deploy();
         claimsTopicsRegistry = await new ClaimTopicsRegistry__factory(owner).deploy();
-        OwnerIdentity = await new Identity__factory(owner).deploy();
-        customer1 = await new Identity__factory(owner).deploy();
-        customer2 = await new Identity__factory(owner).deploy();
-        // marketplaceId = await new Identity__factory(owner).deploy(marketplace.address,false);
+        identityTemplate = await new Identity__factory(owner).deploy();
+        identityFactory = await new IdentityFactory__factory(owner).deploy();
+        marketplaceId = await new Identity__factory(owner).deploy();
+        await marketplaceId.connect(owner).init(marketplace.address,false);
         // Init for the contracts :
         
-        await OwnerIdentity.connect(owner).init(owner.address,false);
-        await customer1.connect(signers[1]).init(signers[1].address,false);
-        await customer2.connect(signers[2]).init(signers[2].address,false);
+        
         await factory.connect(owner).initialize(template.address,owner.address,marketplace.address, STOFactory.address);
         await marketplace.connect(owner).initialize(owner.address,template.address,200,usdt.address);
         await factory.connect(owner).deployNFTCollection("NoCapSampleNFT","NCP",owner.address,200);
@@ -60,14 +58,16 @@ describe("STO Marketplace", ()=>{
         await identityRegistry.connect(owner).init(trustedIssuersRegistry.address,claimsTopicsRegistry.address,identityRegistryStorage.address);
         await claimsTopicsRegistry.connect(owner).init();
         await trustedIssuersRegistry.connect(owner).init();
+        await identityFactory.connect(owner).init(identityTemplate.address,identityRegistry.address,owner.address);
         await identityRegistry.connect(owner).addAgentOnIdentityRegistryContract(owner.address);
+        await identityRegistry.connect(owner).addAgent(identityFactory.address);
         await identityRegistryStorage.connect(owner).bindIdentityRegistry(identityRegistry.address);
-        await identityRegistry.connect(owner).registerIdentity(owner.address,OwnerIdentity.address,1);
-        await identityRegistry.connect(owner).registerIdentity(signers[1].address,customer1.address,1);
-        await identityRegistry.connect(owner).registerIdentity(signers[2].address,customer2.address,2);
+        await identityFactory.connect(owner).createAndRegisterIdentity(1);
+        await identityFactory.connect(signers[1]).createAndRegisterIdentity(1);
+        await identityFactory.connect(signers[2]).createAndRegisterIdentity(2);
         await STOFactory.connect(owner).init(token.address,compliance.address,owner.address,identityRegistry.address,marketplace.address,factory.address);
         await STOFactory.connect(owner).addAuthorizedCountries([1,2]);
-        // await identityRegistry.connect(owner).registerIdentity(marketplace.address,marketplaceId.address,1);
+        await identityRegistry.connect(owner).registerIdentity(marketplace.address,marketplaceId.address,1);
     })
 
     it("Lazy Minting Test Initial", async()=>{
@@ -148,7 +148,32 @@ describe("STO Marketplace", ()=>{
         await marketplace.connect(signers[2]).buyNFT(voucherSecondary,false,"0x0000000000000000000000000000000000000001",{value: expandTo18Decimals(104)});
 
         console.log("New fraction balance: ", await fractionSTO.balanceOf(signers[2].address));
-
-
     })
+
+    it("NoCapFactory: Deploy NFT Collection", async()=>{
+        await identityFactory.connect(signers[3]).createAndRegisterIdentity(1);
+        await factory.connect(signers[3]).deployNFTCollection("MyNFTCollection","MNFT",signers[3].address,300);
+        let instanceAddress = await factory.getCollectionAddress(signers[3].address,1);
+        let instance = await new NoCapTemplateERC721__factory(signers[3]).attach(instanceAddress);
+        console.log("NFT Details: ", await instance.name());
+    })
+
+    it("NoCapFactory: Deploy NFT Collection(Negative)", async()=>{
+        await identityFactory.connect(signers[3]).createAndRegisterIdentity(1);
+        await expect(factory.connect(signers[3]).deployNFTCollection("MyNFTCollection","MNFT","0x0000000000000000000000000000000000000000",300)).to.be.revertedWith("Zero address.");
+    })
+
+    it("NoCapFactory: Update Template Address", async()=>{
+        await factory.connect(owner).updateTemplateAddress(signers[4].address);
+        console.log("Success.");
+    })
+
+    it("NoCapFactory: Update Template Address(Negative)", async()=>{
+        await expect(factory.connect(signers[3]).updateTemplateAddress(signers[5].address)).to.be.revertedWith("You are not the admin.");
+        await expect(factory.connect(owner).updateTemplateAddress("0x0000000000000000000000000000000000000000")).to.be.revertedWith("Zero address.");
+        console.log("Two require statements covered");
+    })
+
+    it
+
 })
