@@ -10,8 +10,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./Interfaces/INoCapTemplate.sol";
 import "./Library/Voucher.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "hardhat/console.sol";
-
 
 contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, ReentrancyGuardUpgradeable {
 
@@ -35,6 +33,7 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
     uint tokenId;
     uint fractions;
     uint amount;
+    uint sellerShare;
     address currency;
     bool refundIssued;
     }
@@ -146,7 +145,6 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
             uint platformAmount = (platformFeePercent*voucher.pricePerFraction*voucher.fractions)/10000;
             (address receiver, uint royaltyAmount) = INoCapTemplate(voucher.NFTAddress).royaltyInfo(voucher.tokenId, voucher.pricePerFraction);
             uint totalAmount = platformAmount+((voucher.pricePerFraction)*voucher.fractions)+royaltyAmount;
-            console.log("Total amount",totalAmount);
             if(_currency==address(1)) {
                 require(msg.value == totalAmount,"Invalid amount.");
                 (bool sentToSeller,) = payable(voucher.seller).call{value: voucher.pricePerFraction}("");
@@ -190,6 +188,7 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
         perSale.tokenId = _tokenId;
         perSale.fractions = _fractions;
         perSale.currency = _currencyAddress;
+        perSale.sellerShare = _sellerAmount;
     }
  
     function getRefund(uint _transactionId) external nonReentrant returns(bool) {
@@ -198,11 +197,13 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
         uint tokenID = saleReceipt.receiptPerTransaction[_transactionId].tokenId;
         uint amount = saleReceipt.receiptPerTransaction[_transactionId].amount;
         address currency = saleReceipt.receiptPerTransaction[_transactionId].currency;
+       
         require(!saleReceipt.receiptPerTransaction[_transactionId].refundIssued,"Refund already issued for this transaction.");
         require(refundEnabled[collection][tokenID],"Refund is not enable on this sale.");
-        SellerAmounts[(saleReceipt.receiptPerTransaction[_transactionId].seller)][collection][tokenID].amount-=amount;
+        SellerAmounts[saleReceipt.receiptPerTransaction[_transactionId].seller][collection][tokenID].amount-=saleReceipt.receiptPerTransaction[_transactionId].sellerShare;
+        saleReceipt.receiptPerTransaction[_transactionId].refundIssued = true;
         if(currency==address(1)) {
-            (bool sent,) = msg.sender.call{value:amount}("");
+            (bool sent,) = payable(msg.sender).call{value:amount}("");
             require(sent);
             return sent; 
         }
@@ -210,6 +211,7 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
             (bool sent) = IERC20(currency).transfer(msg.sender,amount);
             return sent;
         }
+        
     }
 
     function viewSaleReceipt(address _address, uint _transactionNo) external view returns(PerSale memory) {

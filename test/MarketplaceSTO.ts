@@ -495,4 +495,74 @@ describe("STO Marketplace", ()=>{
         console.log("Require to check secondary sale after ending of primary sale covered.");
     })
 
+    it("NoCapMarketplace: Enable refund & get refund",async() =>{
+        let NFTAddress = await factory.getCollectionAddress(owner.address,2);
+        const seller = await new NoCapVoucher({
+            _contract : marketplace,
+            _signer : owner,
+        })
+
+        const secondarySeller = await new NoCapVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+        })
+
+        const voucher = await seller.createVoucher(
+            owner.address,
+            NFTAddress,
+            1,
+            4,
+            2,
+            expandTo18Decimals(100),
+            true,
+            owner.address,
+            200,
+            "Latest Collection");
+
+            await marketplace.connect(signers[1]).buyNFT(voucher,true,"0x0000000000000000000000000000000000000001",{value:expandTo18Decimals(204)});
+            console.log("Sale Receipt: ",await marketplace.viewSaleReceipt(signers[1].address,1));
+            await marketplace.connect(owner).enableRefundForSale(NFTAddress,1);
+            console.log("Balance before refund: ", await ethers.provider.getBalance(signers[1].address));
+            console.log("Seller amount before refund: ", await marketplace.viewSellerAmounts(owner.address,NFTAddress,1));
+            await marketplace.connect(signers[1]).getRefund(1);
+            console.log("Balance after refund: ", await ethers.provider.getBalance(signers[1].address));
+            console.log("Seller amount after refund: ", await marketplace.viewSellerAmounts(owner.address,NFTAddress,1));
+    })
+
+    it.only("NoCapMarketplace: Get refund(Negative)", async() => {
+        let NFTAddress = await factory.getCollectionAddress(owner.address,2);
+        const seller = await new NoCapVoucher({
+            _contract : marketplace,
+            _signer : owner,
+        })
+
+        const secondarySeller = await new NoCapVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+        })
+
+        const voucher = await seller.createVoucher(
+            owner.address,
+            NFTAddress,
+            1,
+            4,
+            2,
+            expandTo18Decimals(100),
+            true,
+            owner.address,
+            200,
+            "Latest Collection");
+
+            await marketplace.connect(signers[1]).buyNFT(voucher,true,"0x0000000000000000000000000000000000000001",{value:expandTo18Decimals(204)});
+            console.log("Sale Receipt: ",await marketplace.viewSaleReceipt(signers[1].address,1));
+
+            await expect(marketplace.connect(signers[1]).getRefund(1)).to.be.revertedWith("Refund is not enable on this sale.");
+
+            await marketplace.connect(owner).enableRefundForSale(NFTAddress,1);
+            await marketplace.connect(signers[1]).getRefund(1);
+            await expect(marketplace.connect(signers[1]).getRefund(1)).to.be.revertedWith("Refund already issued for this transaction.");
+
+            console.log("Requires for 'refund not enabled' & 'refund already issued' covered.");
+    })
+
 })
