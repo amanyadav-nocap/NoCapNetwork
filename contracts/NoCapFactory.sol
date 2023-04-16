@@ -60,8 +60,9 @@ contract NoCapFactory is Initializable, OwnableUpgradeable {
         templateAddress = _newTemplate;
     }
 
-    function updateAdmin(address _newAdmin) external onlyAdmin {
+    function updateAdmin(address _newAdmin) external onlyAdmin returns(bool){
         admin = _newAdmin;
+        return true;
     }
 
     function getCollectionAddress(address owner, uint collectionNumber) external view returns(address) {
