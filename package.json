@@ -2,7 +2,7 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.4",
-    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@types/mocha": "^9.1.1",
     "hardhat": "^2.12.0",
     "ts-node": "^10.9.1",
@@ -20,8 +20,8 @@
     "dotenv": "^16.0.3",
     "hardhat-chai-matchers": "0.0.1",
     "hardhat-contract-sizer": "^2.6.1",
-    "hardhat-gas-reporter": "^1.0.9",
-    "solidity-coverage": "^0.8.2",
+    "hardhat-gas-reporter": "^1.0.2",
+    "solidity-coverage": "^0.7.22",
     "typechain": "^8.1.0",
     "yesno": "^0.4.0"
   }

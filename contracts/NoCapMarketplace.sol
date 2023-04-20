@@ -40,7 +40,6 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
 
     struct SaleReceipt {
     uint totalTransactions;
-    uint totalAmount;
     mapping(uint=>PerSale) receiptPerTransaction;
     }
 
@@ -180,7 +179,6 @@ contract NoCapMarketplace is Ownable, Initializable, EIP712Upgradeable, Reentran
         SellerAmounts[_seller][_collection][_tokenId].currencyAddress = _currencyAddress;
         SellerAmounts[_seller][_collection][_tokenId].amount += _sellerAmount;
         saleReceipt.totalTransactions++;
-        saleReceipt.totalAmount += _totalAmount;
         PerSale storage perSale = saleReceipt.receiptPerTransaction[saleReceipt.totalTransactions];
         perSale.collectionAddress = _collection;
         perSale.amount = _totalAmount;

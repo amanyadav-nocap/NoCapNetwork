@@ -6,7 +6,7 @@ ImplementationAuthority, ImplementationAuthority__factory, NoCapFactory, NoCapFa
 NoCapSecurityTokenFactory, NoCapSecurityTokenFactory__factory, NoCapTemplateERC721, NoCapTemplateERC721__factory, TokenST, TokenST__factory, 
 TrustedIssuersRegistry, TrustedIssuersRegistry__factory, USDT, USDT__factory } from "../typechain-types";
 import { TrustedIssuerAddedEvent } from "../typechain-types/contracts/SecurityToken/interface/ITrustedIssuersRegistry";
-import { expandTo18Decimals } from "./utilities/utilities";
+import { expandTo18Decimals, expandTo6Decimals } from "./utilities/utilities";
 import NoCapVoucher from "./utilities/voucher";
 import { expect } from "chai";
 
@@ -529,7 +529,7 @@ describe("STO Marketplace", ()=>{
             console.log("Seller amount after refund: ", await marketplace.viewSellerAmounts(owner.address,NFTAddress,1));
     })
 
-    it.only("NoCapMarketplace: Get refund(Negative)", async() => {
+    it("NoCapMarketplace: Get refund(Negative)", async() => {
         let NFTAddress = await factory.getCollectionAddress(owner.address,2);
         const seller = await new NoCapVoucher({
             _contract : marketplace,
@@ -563,6 +563,41 @@ describe("STO Marketplace", ()=>{
             await expect(marketplace.connect(signers[1]).getRefund(1)).to.be.revertedWith("Refund already issued for this transaction.");
 
             console.log("Requires for 'refund not enabled' & 'refund already issued' covered.");
+    })
+
+    it("NoCapMarketplace: Buy NFT with USDT", async() => {
+        let NFTAddress = await factory.getCollectionAddress(owner.address,2);
+        const seller = await new NoCapVoucher({
+            _contract : marketplace,
+            _signer : owner,
+        })
+
+        const secondarySeller = await new NoCapVoucher({
+            _contract: marketplace,
+            _signer: signers[1],
+        })
+
+        const voucher = await seller.createVoucher(
+            owner.address,
+            NFTAddress,
+            1,
+            4,
+            2,
+            expandTo6Decimals(100) ,
+            true,
+            owner.address,
+            200,
+            "Latest Collection");
+
+        await usdt.connect(owner).transfer(signers[1].address,expandTo6Decimals(300));
+        await usdt.connect(signers[1]).approve(marketplace.address,expandTo6Decimals(300));
+        await marketplace.connect(signers[1]).buyNFT(voucher,true,usdt.address);
+        console.log("balance marketplace: ", await usdt.balanceOf(marketplace.address));
+        console.log("Sale receipt: ", await marketplace.viewSaleReceipt(signers[1].address,1));     
+    }) 
+
+    it("", async() => {
+
     })
 
 })
